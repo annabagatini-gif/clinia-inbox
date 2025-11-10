@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
@@ -313,49 +312,7 @@ export function ConversationListNew({
             </div>
           </div>
 
-          {/* Abas */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4 h-9">
-              <TabsTrigger value="all" className="text-xs relative">
-                Todos
-                {allCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 h-5 px-1.5 text-xs"
-                  >
-                    {allCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="my" className="text-xs">
-                Meus
-                {myCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 h-5 px-1.5 text-xs"
-                  >
-                    {myCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="unassigned" className="text-xs">
-                Não atrib.
-                {unassignedCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 h-5 px-1.5 text-xs"
-                  >
-                    {unassignedCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="groups" className="text-xs">
-                Grupos
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Search */}
+          {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
