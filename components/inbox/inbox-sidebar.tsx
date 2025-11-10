@@ -10,9 +10,21 @@ export function InboxSidebar() {
     <div className="w-64 border-r bg-background flex flex-col flex-shrink-0 h-full">
       {/* Logo */}
       <div className="p-4 flex items-center gap-2 flex-shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-sm">C</span>
+        <div className="w-10 h-10 rounded-lg bg-[#3B5566] flex items-center justify-center">
+          <svg
+            viewBox="0 0 24 24"
+            className="w-6 h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+            <path d="M8 12h8M12 8v8" />
+          </svg>
         </div>
+        <span className="font-semibold text-lg">Clinia</span>
       </div>
 
       <Separator className="flex-shrink-0" />
