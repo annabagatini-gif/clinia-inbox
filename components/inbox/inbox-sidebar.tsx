@@ -86,34 +86,36 @@ export function InboxSidebar() {
 
           <Button
             variant="ghost"
-            className="w-full justify-between gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+            className="w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
           >
-            <div className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
+            <div className="flex items-center gap-3">
+              <Home className="h-5 w-5" />
               Todos os chats
             </div>
             <span className="text-xs text-gray-500">421</span>
           </Button>
 
           <Button
-            variant="secondary"
-            className="w-full justify-between gap-2 font-normal text-sm h-9 px-2 rounded-lg"
+            variant="ghost"
+            className="w-full justify-between gap-3 font-medium text-sm h-10 px-3 rounded-lg bg-[#2C5866] text-white hover:bg-[#1E3A47]"
           >
-            <div className="flex items-center gap-2">
-              <Inbox className="h-4 w-4" />
+            <div className="flex items-center gap-3">
+              <Inbox className="h-5 w-5" />
               Meus chats
             </div>
-            <span className="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">
+            <span className="text-xs bg-white/20 text-white rounded-full px-2 py-0.5 font-semibold">
               22
             </span>
           </Button>
 
           <Button
             variant="ghost"
-            className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+            className="w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
           >
-            <Users className="h-4 w-4" />
-            Chats não atribuídos
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5" />
+              Chats não atribuídos
+            </div>
           </Button>
 
           <div className="pt-4">
@@ -124,25 +126,25 @@ export function InboxSidebar() {
             <div className="space-y-1">
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+                className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
               >
-                <Users className="h-4 w-4" />
+                <Users className="h-5 w-5" />
                 Grupo 1
               </Button>
 
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+                className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
               >
-                <Users className="h-4 w-4" />
+                <Users className="h-5 w-5" />
                 Grupo 2
               </Button>
 
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+                className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
               >
-                <Users className="h-4 w-4" />
+                <Users className="h-5 w-5" />
                 Grupo 3
               </Button>
             </div>
