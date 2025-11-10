@@ -106,17 +106,17 @@ export const mockMessages: Record<string, Message[]> = {
   "1": [
     {
       id: "1",
+      sender: "Hailey Garza",
+      content: "Hi, my credit card isn't working.",
+      timestamp: "Nov 9, 8:00 AM",
+      isUser: true,
+    },
+    {
+      id: "2",
       sender: "June Jensen",
       content: "Let me take a look on how to solve this issue for you.",
       timestamp: "Nov 9, 8:03 AM",
       isUser: false,
-    },
-    {
-      id: "2",
-      sender: "Hailey Garza",
-      content: "Hi, my credit card isn't working.",
-      timestamp: "Nov 10, 10:00 AM",
-      isUser: true,
     },
   ],
 };
