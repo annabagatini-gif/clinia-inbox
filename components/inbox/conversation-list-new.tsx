@@ -57,6 +57,15 @@ interface ConversationListProps {
   onSelect: (id: string) => void;
 }
 
+// Mapa de cores para as tags
+const tagColors: Record<string, string> = {
+  "Urgente": "bg-red-100 text-red-800 border-red-200",
+  "Pagamento": "bg-green-100 text-green-800 border-green-200",
+  "Pedido": "bg-blue-100 text-blue-800 border-blue-200",
+  "Suporte": "bg-purple-100 text-purple-800 border-purple-200",
+  "Bug": "bg-orange-100 text-orange-800 border-orange-200",
+};
+
 export function ConversationListNew({
   selectedId,
   onSelect,
@@ -69,6 +78,7 @@ export function ConversationListNew({
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterTag, setFilterTag] = useState<string>("all");
   const [filterUser, setFilterUser] = useState<string>("all");
+  const [selectionMode, setSelectionMode] = useState(false);
 
   // Calcula badges de contagem
   const allCount = mockConversations.filter((c) => c.status === "open").length;
@@ -478,8 +488,10 @@ function ConversationCard({
                       <Tooltip>
                         <TooltipTrigger>
                           <Badge
-                            variant="secondary"
-                            className="text-xs h-5 px-1.5"
+                            variant="outline"
+                            className={`text-xs h-5 px-1.5 ${
+                              tagColors[tag] || "bg-gray-100 text-gray-800 border-gray-200"
+                            }`}
                           >
                             {tag}
                           </Badge>
