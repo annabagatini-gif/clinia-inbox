@@ -66,6 +66,43 @@ const tagColors: Record<string, string> = {
   "Bug": "bg-orange-100 text-orange-800 border-orange-200",
 };
 
+// Listas de etiquetas e usuários
+const allTags = [
+  "Urgente",
+  "Pagamento",
+  "Pedido",
+  "Suporte",
+  "Bug",
+  "Feedback",
+  "Dúvida",
+  "Reclamação",
+  "Elogio",
+  "Renovação",
+  "Cancelamento",
+  "Integração",
+  "Treinamento",
+  "Documentação",
+  "Cotação",
+];
+
+const allUsers = [
+  { id: "user1", name: "June Jensen", avatar: "JJ" },
+  { id: "user2", name: "Anna B", avatar: "AB" },
+  { id: "user3", name: "Carlos Silva", avatar: "CS" },
+  { id: "user4", name: "Maria Santos", avatar: "MS" },
+  { id: "user5", name: "Pedro Costa", avatar: "PC" },
+  { id: "user6", name: "Ana Oliveira", avatar: "AO" },
+  { id: "user7", name: "Lucas Alves", avatar: "LA" },
+  { id: "user8", name: "Julia Pereira", avatar: "JP" },
+  { id: "user9", name: "Rafael Lima", avatar: "RL" },
+  { id: "user10", name: "Camila Souza", avatar: "CS" },
+  { id: "user11", name: "Bruno Martins", avatar: "BM" },
+  { id: "user12", name: "Fernanda Rocha", avatar: "FR" },
+  { id: "user13", name: "Thiago Dias", avatar: "TD" },
+  { id: "user14", name: "Beatriz Ferreira", avatar: "BF" },
+  { id: "user15", name: "Gabriel Mendes", avatar: "GM" },
+];
+
 export function ConversationListNew({
   selectedId,
   onSelect,
@@ -76,8 +113,8 @@ export function ConversationListNew({
     []
   );
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterTag, setFilterTag] = useState<string>("all");
-  const [filterUser, setFilterUser] = useState<string>("all");
+  const [filterTags, setFilterTags] = useState<string[]>([]);
+  const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
 
   // Calcula badges de contagem
@@ -108,14 +145,18 @@ export function ConversationListNew({
     // Filtro de status
     if (filterStatus !== "all" && conv.status !== filterStatus) return false;
 
-    // Filtro de tag
-    if (filterTag !== "all" && !conv.tags.includes(filterTag)) return false;
+    // Filtro de tags (multiselect)
+    if (filterTags.length > 0) {
+      const hasMatchingTag = filterTags.some((tag) => conv.tags.includes(tag));
+      if (!hasMatchingTag) return false;
+    }
 
-    // Filtro de usuário
-    if (filterUser !== "all") {
-      if (filterUser === "unassigned" && conv.assignedTo) return false;
-      if (filterUser !== "unassigned" && conv.assignedTo?.id !== filterUser)
-        return false;
+    // Filtro de usuários (multiselect)
+    if (filterUsers.length > 0) {
+      const hasMatchingUser = filterUsers.some(
+        (userId) => conv.assignedTo?.id === userId
+      );
+      if (!hasMatchingUser) return false;
     }
 
     return true;

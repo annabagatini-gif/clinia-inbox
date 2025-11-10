@@ -47,17 +47,17 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
       <ScrollArea className="flex-1 p-6">
         <div className="space-y-4 max-w-3xl">
           {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[70%] ${message.isUser ? 'order-2' : 'order-1'}`}>
+            <div key={message.id} className={`flex ${message.isUser ? 'justify-start' : 'justify-end'}`}>
+              <div className={`max-w-[70%]`}>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-medium">{message.isUser ? 'JJ' : message.sender}</span>
+                  <span className="text-xs font-medium">{message.sender}</span>
                   <span className="text-xs text-muted-foreground">{message.timestamp}</span>
                 </div>
                 <div
                   className={`rounded-2xl px-4 py-3 ${
                     message.isUser
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-muted text-foreground'
+                      ? 'bg-muted text-foreground'
+                      : 'bg-blue-500 text-white'
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
