@@ -8,6 +8,7 @@ import { mockConversations } from "@/lib/mock-data";
 
 export default function Home() {
   const [selectedConversationId, setSelectedConversationId] = useState<string>();
+  const [activeTab, setActiveTab] = useState("my");
 
   const selectedConversation = mockConversations.find(
     (c) => c.id === selectedConversationId
@@ -15,10 +16,11 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F1F3F4] p-2 gap-2">
-      <InboxSidebar />
+      <InboxSidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <ConversationListNew
         selectedId={selectedConversationId}
         onSelect={setSelectedConversationId}
+        activeTab={activeTab}
       />
       <ChatArea
         conversationId={selectedConversationId}

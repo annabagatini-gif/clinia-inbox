@@ -55,6 +55,7 @@ import { Conversation } from "@/types/inbox";
 interface ConversationListProps {
   selectedId?: string;
   onSelect: (id: string) => void;
+  activeTab: string;
 }
 
 // Mapa de cores para as tags
@@ -69,8 +70,8 @@ const tagColors: Record<string, string> = {
 export function ConversationListNew({
   selectedId,
   onSelect,
+  activeTab,
 }: ConversationListProps) {
-  const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedConversations, setSelectedConversations] = useState<string[]>(
     []

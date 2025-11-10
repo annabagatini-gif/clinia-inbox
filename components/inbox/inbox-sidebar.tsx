@@ -1,12 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-export function InboxSidebar() {
+interface InboxSidebarProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
+
+export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
   return (
       <div className="flex h-full flex-shrink-0 gap-2">
         {/* Icon Bar - Lateral esquerda */}
@@ -86,7 +92,13 @@ export function InboxSidebar() {
 
           <Button
             variant="ghost"
-            className="w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
+            onClick={() => onTabChange("all")}
+            className={cn(
+              "w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg",
+              activeTab === "all"
+                ? "bg-gray-200 text-gray-900 font-medium"
+                : "text-gray-700"
+            )}
           >
             <div className="flex items-center gap-3">
               <Home className="h-5 w-5" />
@@ -97,20 +109,36 @@ export function InboxSidebar() {
 
           <Button
             variant="ghost"
-            className="w-full justify-between gap-3 font-medium text-sm h-10 px-3 rounded-lg bg-gray-200 text-gray-900 hover:bg-gray-300"
+            onClick={() => onTabChange("my")}
+            className={cn(
+              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg",
+              activeTab === "my"
+                ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
+                : "text-gray-700 font-normal hover:bg-gray-200"
+            )}
           >
             <div className="flex items-center gap-3">
               <Inbox className="h-5 w-5" />
               Meus chats
             </div>
-            <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-              22
-            </span>
+            {activeTab === "my" ? (
+              <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
+                22
+              </span>
+            ) : (
+              <span className="text-xs text-gray-500">22</span>
+            )}
           </Button>
 
           <Button
             variant="ghost"
-            className="w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
+            onClick={() => onTabChange("unassigned")}
+            className={cn(
+              "w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg",
+              activeTab === "unassigned"
+                ? "bg-gray-200 text-gray-900 font-medium"
+                : "text-gray-700"
+            )}
           >
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5" />
