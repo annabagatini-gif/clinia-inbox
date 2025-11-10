@@ -377,7 +377,7 @@ export function ConversationListNew({
 
         {/* Lista de Conversas */}
         <ScrollArea className="flex-1 overflow-auto">
-          <div className="space-y-0 min-h-full">
+          <div className="space-y-0 min-h-full pr-2">
             {sortedConversations.map((conversation) => (
               <ConversationCard
                 key={conversation.id}
