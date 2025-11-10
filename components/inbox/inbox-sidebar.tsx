@@ -74,15 +74,12 @@ export function InboxSidebar() {
       {/* Navigation */}
       <ScrollArea className="flex-1 min-h-0 px-3 py-4">
         <div className="space-y-1">
-          {/* Título Inbox */}
+          {/* Título Caixa de Entrada */}
           <div className="flex items-center justify-between px-2 pb-3 pt-2">
-            <h3 className="text-base font-semibold text-gray-900">Inbox</h3>
+            <h3 className="text-base font-semibold text-gray-900">Caixa de Entrada</h3>
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-gray-200">
                 <Search className="h-4 w-4 text-gray-600" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-gray-200">
-                <ChevronRight className="h-4 w-4 text-gray-600" />
               </Button>
             </div>
           </div>
@@ -92,81 +89,63 @@ export function InboxSidebar() {
             className="w-full justify-between gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
           >
             <div className="flex items-center gap-2">
-              <Inbox className="h-4 w-4" />
-              Your Inbox
-            </div>
-            <span className="text-xs text-gray-500">22</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
-          >
-            <MessageSquare className="h-4 w-4" />
-            Mentions
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="w-full justify-between gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
-          >
-            <div className="flex items-center gap-2">
-              <Inbox className="h-4 w-4" />
-              All
+              <Home className="h-4 w-4" />
+              Todos os chats
             </div>
             <span className="text-xs text-gray-500">421</span>
           </Button>
 
           <Button
-            variant="ghost"
-            className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+            variant="secondary"
+            className="w-full justify-between gap-2 font-normal text-sm h-9 px-2 rounded-lg"
           >
-            <UserCircle className="h-4 w-4" />
-            Unassigned
+            <div className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" />
+              Meus chats
+            </div>
+            <span className="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">
+              22
+            </span>
           </Button>
 
           <Button
             variant="ghost"
             className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
           >
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
+            <Users className="h-4 w-4" />
+            Chats não atribuídos
           </Button>
 
           <div className="pt-4">
-            <Button
-              variant="ghost"
-              className="w-full justify-between gap-2 font-normal text-sm h-8 px-2 hover:bg-gray-200 rounded-lg text-gray-600"
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className="h-3 w-3" />
-                <span className="text-xs uppercase font-medium">TEAMS</span>
-              </div>
-            </Button>
-          </div>
+            <h3 className="px-2 text-xs font-medium text-gray-500 mb-2 uppercase">
+              Grupos
+            </h3>
+            
+            <div className="space-y-1">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+              >
+                <Users className="h-4 w-4" />
+                Grupo 1
+              </Button>
 
-          <div className="pt-1">
-            <Button
-              variant="ghost"
-              className="w-full justify-between gap-2 font-normal text-sm h-8 px-2 hover:bg-gray-200 rounded-lg text-gray-600"
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className="h-3 w-3" />
-                <span className="text-xs uppercase font-medium">TEAMMATES</span>
-              </div>
-            </Button>
-          </div>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+              >
+                <Users className="h-4 w-4" />
+                Grupo 2
+              </Button>
 
-          <div className="pt-1">
-            <Button
-              variant="ghost"
-              className="w-full justify-between gap-2 font-normal text-sm h-8 px-2 hover:bg-gray-200 rounded-lg text-gray-600"
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className="h-3 w-3" />
-                <span className="text-xs uppercase font-medium">VIEWS</span>
-              </div>
-            </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 font-normal text-sm h-9 px-2 hover:bg-gray-200 rounded-lg text-gray-700"
+              >
+                <Users className="h-4 w-4" />
+                Grupo 3
+              </Button>
+            </div>
           </div>
         </div>
       </ScrollArea>
