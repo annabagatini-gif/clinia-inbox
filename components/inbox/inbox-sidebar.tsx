@@ -10,7 +10,7 @@ export function InboxSidebar() {
   return (
     <div className="flex h-full flex-shrink-0">
       {/* Icon Bar - Lateral esquerda */}
-      <div className="w-16 bg-[#E5E7EB] flex flex-col items-center py-4 gap-2">
+      <div className="w-16 bg-[#F3F4F6] flex flex-col items-center py-4 gap-2">
         {/* Logo */}
         <div className="w-10 h-10 rounded-xl bg-gray-300 flex items-center justify-center mb-4">
           <svg
