@@ -285,5 +285,222 @@ export const mockMessages: Record<string, Message[]> = {
       isUser: false,
     },
   ],
+  "2": [
+    {
+      id: "1",
+      sender: "João Santos",
+      content: "Tenho uma dúvida sobre meu pedido",
+      timestamp: "10 Nov, 9:15",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "June Jensen",
+      content: "Claro! Como posso ajudar com seu pedido?",
+      timestamp: "10 Nov, 9:16",
+      isUser: false,
+    },
+  ],
+  "3": [
+    {
+      id: "1",
+      sender: "Ana Costa",
+      content: "O aplicativo está fora do ar?",
+      timestamp: "10 Nov, 10:30",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "June Jensen",
+      content: "Não, está funcionando normalmente. Você está tendo algum problema específico?",
+      timestamp: "10 Nov, 10:31",
+      isUser: false,
+    },
+    {
+      id: "3",
+      sender: "Ana Costa",
+      content: "Sim, não consigo fazer login",
+      timestamp: "10 Nov, 10:32",
+      isUser: true,
+    },
+  ],
+  "4": [
+    {
+      id: "1",
+      sender: "Pedro Oliveira",
+      content: "Pode me enviar a documentação?",
+      timestamp: "10 Nov, 11:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "June Jensen",
+      content: "Com certeza! Vou enviar o link da documentação completa.",
+      timestamp: "10 Nov, 11:02",
+      isUser: false,
+    },
+  ],
+  "5": [
+    {
+      id: "1",
+      sender: "Carla Mendes",
+      content: "Criei uma nova página mas não está aparecendo",
+      timestamp: "10 Nov, 12:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "June Jensen",
+      content: "Vou verificar isso para você. Pode me passar mais detalhes?",
+      timestamp: "10 Nov, 12:05",
+      isUser: false,
+    },
+  ],
+  "6": [
+    {
+      id: "1",
+      sender: "Lucas Ferreira",
+      content: "Isso começou a acontecer ontem",
+      timestamp: "9 Nov, 16:00",
+      isUser: true,
+    },
+  ],
+  "7": [
+    {
+      id: "1",
+      sender: "Beatriz Alves",
+      content: "Quando vocês vão lançar a nova funcionalidade?",
+      timestamp: "9 Nov, 14:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "Anna B",
+      content: "Estamos trabalhando nisso! A previsão é para o próximo mês.",
+      timestamp: "9 Nov, 14:30",
+      isUser: false,
+    },
+  ],
+  "8": [
+    {
+      id: "1",
+      sender: "Rafael Souza",
+      content: "Preciso cancelar minha assinatura",
+      timestamp: "9 Nov, 15:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "Anna B",
+      content: "Posso ajudar com isso. Posso perguntar o motivo do cancelamento?",
+      timestamp: "9 Nov, 15:05",
+      isUser: false,
+    },
+  ],
+  "9": [
+    {
+      id: "1",
+      sender: "Juliana Lima",
+      content: "Estava com problema no pagamento",
+      timestamp: "8 Nov, 10:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "June Jensen",
+      content: "Vou verificar isso para você agora mesmo.",
+      timestamp: "8 Nov, 10:02",
+      isUser: false,
+    },
+    {
+      id: "3",
+      sender: "Juliana Lima",
+      content: "Obrigada pelo atendimento! Funcionou perfeitamente",
+      timestamp: "8 Nov, 10:45",
+      isUser: true,
+    },
+  ],
+  "10": [
+    {
+      id: "1",
+      sender: "Felipe Martins",
+      content: "Como faço para integrar com meu sistema?",
+      timestamp: "8 Nov, 11:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "Anna B",
+      content: "Temos uma documentação completa sobre integrações. Vou te enviar o link.",
+      timestamp: "8 Nov, 11:10",
+      isUser: false,
+    },
+  ],
+  "11": [
+    {
+      id: "1",
+      sender: "Amanda Rocha",
+      content: "Vocês têm desconto para estudantes?",
+      timestamp: "7 Nov, 14:00",
+      isUser: true,
+    },
+  ],
+  "12": [
+    {
+      id: "1",
+      sender: "Thiago Barbosa",
+      content: "Meu pagamento foi recusado, o que faço?",
+      timestamp: "7 Nov, 15:00",
+      isUser: true,
+    },
+  ],
+  "13": [
+    {
+      id: "1",
+      sender: "Camila Rodrigues",
+      content: "Gostaria de falar com um supervisor",
+      timestamp: "6 Nov, 10:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "Anna B",
+      content: "Vou transferir você para um supervisor. Por favor, aguarde um momento.",
+      timestamp: "6 Nov, 10:05",
+      isUser: false,
+    },
+  ],
+  "14": [
+    {
+      id: "1",
+      sender: "Bruno Dias",
+      content: "Comecei a usar o produto semana passada",
+      timestamp: "5 Nov, 9:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "Bruno Dias",
+      content: "Excelente produto! Recomendo muito",
+      timestamp: "5 Nov, 9:01",
+      isUser: true,
+    },
+  ],
+  "15": [
+    {
+      id: "1",
+      sender: "Fernanda Gomes",
+      content: "Não consigo fazer login na minha conta",
+      timestamp: "5 Nov, 10:00",
+      isUser: true,
+    },
+    {
+      id: "2",
+      sender: "June Jensen",
+      content: "Vou ajudar você com isso. Qual mensagem de erro aparece?",
+      timestamp: "5 Nov, 10:02",
+      isUser: false,
+    },
+  ],
 };
 
