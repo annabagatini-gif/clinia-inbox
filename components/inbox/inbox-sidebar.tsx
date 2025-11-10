@@ -10,7 +10,7 @@ export function InboxSidebar() {
   return (
     <div className="flex h-full flex-shrink-0">
       {/* Icon Bar - Lateral esquerda */}
-      <div className="w-16 bg-[#F3F4F6] flex flex-col items-center py-4 gap-2">
+      <div className="w-16 bg-[#F3F4F6] flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm">
         {/* Logo */}
         <div className="w-10 h-10 rounded-xl bg-gray-300 flex items-center justify-center mb-4">
           <svg
@@ -69,7 +69,7 @@ export function InboxSidebar() {
       </div>
 
       {/* Main Sidebar Content */}
-      <div className="w-64 bg-[#F7F8FA] flex flex-col flex-shrink-0 h-full rounded-tl-2xl shadow-sm ml-1">
+      <div className="w-64 bg-[#F7F8FA] flex flex-col flex-shrink-0 h-full rounded-2xl shadow-sm">
 
       {/* Navigation */}
       <ScrollArea className="flex-1 min-h-0 px-3 py-4">
