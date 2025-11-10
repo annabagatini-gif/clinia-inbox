@@ -169,6 +169,25 @@ export function ConversationListNew({
                 <TooltipContent>Nova conversa</TooltipContent>
               </Tooltip>
 
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={selectionMode ? "secondary" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      setSelectionMode(!selectionMode);
+                      if (selectionMode) {
+                        setSelectedConversations([]);
+                      }
+                    }}
+                  >
+                    <CheckCheck className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Selecionar múltiplas</TooltipContent>
+              </Tooltip>
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -339,7 +358,7 @@ export function ConversationListNew({
           </div>
 
           {/* Select All Checkbox */}
-          {sortedConversations.length > 0 && (
+          {selectionMode && sortedConversations.length > 0 && (
             <div className="flex items-center gap-2 px-1">
               <Checkbox
                 checked={
@@ -367,6 +386,7 @@ export function ConversationListNew({
                 isChecked={selectedConversations.includes(conversation.id)}
                 onSelect={onSelect}
                 onCheck={handleSelectConversation}
+                selectionMode={selectionMode}
               />
             ))}
 
@@ -389,27 +409,31 @@ function ConversationCard({
   isChecked,
   onSelect,
   onCheck,
+  selectionMode,
 }: {
   conversation: Conversation;
   isSelected: boolean;
   isChecked: boolean;
   onSelect: (id: string) => void;
   onCheck: (id: string) => void;
+  selectionMode: boolean;
 }) {
   return (
     <div
-      className={`group relative p-3 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
+      className={`group relative p-3 flex items-start hover:bg-muted/50 transition-colors border-b cursor-pointer ${
         isSelected ? "bg-muted" : ""
       } ${conversation.isPinned ? "bg-muted/30" : ""}`}
     >
-      {/* Checkbox */}
-      <div className="flex-shrink-0 pt-1">
-        <Checkbox
-          checked={isChecked}
-          onCheckedChange={() => onCheck(conversation.id)}
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
+      {/* Checkbox - só aparece no modo seleção */}
+      {selectionMode && (
+        <div className="flex-shrink-0 pt-1">
+          <Checkbox
+            checked={isChecked}
+            onCheckedChange={() => onCheck(conversation.id)}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       {/* Main Content */}
       <div
