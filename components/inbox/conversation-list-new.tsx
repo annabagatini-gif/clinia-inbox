@@ -448,7 +448,7 @@ export function ConversationListNew({
 
         {/* Lista de Conversas */}
         <ScrollArea className="flex-1 overflow-auto">
-          <div className="space-y-0 min-h-full pr-4 pl-2">
+          <div className="space-y-0 min-h-full">
             {sortedConversations.map((conversation) => (
               <ConversationCard
                 key={conversation.id}
@@ -491,9 +491,9 @@ function ConversationCard({
 }) {
   return (
     <div
-      className={`group relative p-3 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
+      className={`group relative py-3 pl-3 pr-4 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
         isSelected ? "bg-muted" : ""
-      } ${conversation.isPinned ? "bg-muted/30" : ""}`}
+      }`}
     >
       {/* Checkbox - só aparece no modo seleção */}
       {selectionMode && (
