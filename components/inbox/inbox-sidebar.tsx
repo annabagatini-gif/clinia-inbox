@@ -7,18 +7,18 @@ import { Separator } from "@/components/ui/separator";
 
 export function InboxSidebar() {
   return (
-    <div className="w-64 border-r bg-background flex flex-col flex-shrink-0 overflow-hidden">
+    <div className="w-64 border-r bg-background flex flex-col flex-shrink-0 h-full">
       {/* Logo */}
-      <div className="p-4 flex items-center gap-2">
+      <div className="p-4 flex items-center gap-2 flex-shrink-0">
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
           <span className="text-primary-foreground font-bold text-sm">C</span>
         </div>
       </div>
 
-      <Separator />
+      <Separator className="flex-shrink-0" />
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
+      <ScrollArea className="flex-1 min-h-0 px-3 py-4">
         <div className="space-y-1">
           <Button
             variant="ghost"
