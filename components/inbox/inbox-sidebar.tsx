@@ -48,6 +48,7 @@ export function InboxSidebar() {
             variant="ghost"
             className="w-full justify-start gap-3 font-normal"
           >
+            <Users className="h-4 w-4" />
             Chats não atribuídos
           </Button>
 
