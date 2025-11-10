@@ -162,7 +162,7 @@ export function ConversationListNew({
 
   return (
     <TooltipProvider>
-      <div className="w-[420px] bg-background flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-md">
+      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-md">
         {/* Header com Abas */}
         <div className="p-4 space-y-3 flex-shrink-0">
           <div className="flex items-center justify-between">

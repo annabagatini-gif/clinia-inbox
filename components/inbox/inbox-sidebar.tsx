@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 
 export function InboxSidebar() {
   return (
-    <div className="flex h-full flex-shrink-0 gap-2">
-      {/* Icon Bar - Lateral esquerda */}
-      <div className="w-16 bg-[#F3F4F6] flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm">
+      <div className="flex h-full flex-shrink-0 gap-2">
+        {/* Icon Bar - Lateral esquerda */}
+        <div className="w-16 bg-[#F1F3F4] flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm">
         {/* Logo */}
         <div className="w-10 h-10 rounded-xl bg-gray-300 flex items-center justify-center mb-4">
           <svg
@@ -36,13 +36,13 @@ export function InboxSidebar() {
           <Home className="h-6 w-6" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-12 h-12 rounded-xl bg-[#2C5866] text-white hover:bg-[#1E3A47]"
-        >
-          <MessageSquare className="h-6 w-6" />
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300"
+          >
+            <MessageSquare className="h-6 w-6" />
+          </Button>
 
         <Button
           variant="ghost"
@@ -68,8 +68,8 @@ export function InboxSidebar() {
         </div>
       </div>
 
-      {/* Main Sidebar Content */}
-      <div className="w-64 bg-[#F7F8FA] flex flex-col flex-shrink-0 h-full rounded-2xl shadow-sm">
+        {/* Main Sidebar Content */}
+        <div className="w-64 bg-[#F9FAFB] flex flex-col flex-shrink-0 h-full rounded-2xl shadow-sm">
 
       {/* Navigation */}
       <ScrollArea className="flex-1 min-h-0 px-3 py-4">
@@ -97,13 +97,13 @@ export function InboxSidebar() {
 
           <Button
             variant="ghost"
-            className="w-full justify-between gap-3 font-medium text-sm h-10 px-3 rounded-lg bg-[#2C5866] text-white hover:bg-[#1E3A47]"
+            className="w-full justify-between gap-3 font-medium text-sm h-10 px-3 rounded-lg bg-gray-200 text-gray-900 hover:bg-gray-300"
           >
             <div className="flex items-center gap-3">
               <Inbox className="h-5 w-5" />
               Meus chats
             </div>
-            <span className="text-xs bg-white/20 text-white rounded-full px-2 py-0.5 font-semibold">
+            <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
               22
             </span>
           </Button>

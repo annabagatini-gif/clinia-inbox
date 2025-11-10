@@ -14,7 +14,7 @@ export default function Home() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background p-2 gap-2">
+    <div className="flex h-screen overflow-hidden bg-[#F1F3F4] p-2 gap-2">
       <InboxSidebar />
       <ConversationListNew
         selectedId={selectedConversationId}
