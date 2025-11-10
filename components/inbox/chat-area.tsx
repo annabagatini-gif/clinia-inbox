@@ -18,7 +18,7 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
   if (!conversationId) {
     return (
       <div className="flex-1 flex items-center justify-center bg-muted/10">
-        <p className="text-muted-foreground">Select a conversation to start</p>
+        <p className="text-muted-foreground">Selecione uma conversa para iniciar</p>
       </div>
     );
   }
@@ -34,11 +34,11 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
           </Button>
           <Button variant="ghost" size="sm" className="h-8">
             <Moon className="h-4 w-4 mr-2" />
-            <span className="text-sm">Snooze</span>
+            <span className="text-sm">Adiar</span>
           </Button>
           <Button variant="default" size="sm" className="h-8">
             <X className="h-4 w-4 mr-2" />
-            Close
+            Fechar
           </Button>
         </div>
       </div>
@@ -73,25 +73,18 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
         <div className="px-4 py-2 flex items-center gap-2 overflow-x-auto">
           <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
             <Zap className="h-3 w-3 mr-1" />
-            Use macro
+            Resposta rápida
           </Button>
           <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
             <Smile className="h-3 w-3 mr-1" />
-            Insert emoji
+            Emoji
           </Button>
           <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
-            Write a note
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
-            <X className="h-3 w-3 mr-1" />
-            Close
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
-            Snooze
+            Escrever nota
           </Button>
           <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
             <Paperclip className="h-3 w-3 mr-1" />
-            Upload
+            Anexar
           </Button>
         </div>
 
@@ -99,26 +92,14 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
 
         {/* Input Area */}
         <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs text-muted-foreground">Y</span>
-            <Input
-              placeholder="Search actions"
-              className="flex-1 h-8 text-sm"
-            />
-          </div>
           <div className="flex items-center gap-2">
             <Input
-              placeholder="Type your message..."
+              placeholder="Digite sua mensagem..."
               className="flex-1 h-10"
             />
             <Button size="icon" className="h-10 w-10 rounded-full flex-shrink-0">
               <ArrowUp className="h-4 w-4" />
             </Button>
-          </div>
-          <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
-            <span>↑ ↓ to navigate</span>
-            <span>⏎ to select</span>
-            <span>Esc to close</span>
           </div>
         </div>
       </div>

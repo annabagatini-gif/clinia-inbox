@@ -9,7 +9,6 @@ export const mockConversations: Conversation[] = [
     timestamp: "2h",
     unread: true,
     unreadCount: 3,
-    priority: "3min",
     channel: "whatsapp",
     tags: ["Urgente", "Pagamento"],
     isPinned: true,

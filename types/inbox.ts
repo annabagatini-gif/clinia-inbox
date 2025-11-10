@@ -6,7 +6,6 @@ export interface Conversation {
   timestamp: string;
   unread: boolean;
   unreadCount: number;
-  priority?: string; // "3min", "5min", etc.
   channel: "whatsapp" | "instagram";
   tags: string[];
   isPinned: boolean;

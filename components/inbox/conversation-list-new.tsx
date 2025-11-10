@@ -532,14 +532,6 @@ function ConversationCard({
           {/* Right Side: Time & Actions */}
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
             <div className="flex items-center gap-1">
-              {conversation.priority && (
-                <Badge
-                  variant="secondary"
-                  className="bg-yellow-100 text-yellow-800 text-xs px-1.5 h-5"
-                >
-                  {conversation.priority}
-                </Badge>
-              )}
               <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {conversation.timestamp}
               </span>
