@@ -24,20 +24,20 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-background">
+    <div className="flex-1 flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b flex items-center justify-between">
-        <h2 className="font-semibold text-lg">{conversationName}</h2>
-        <div className="flex items-center gap-1">
+      <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
+        <h2 className="font-semibold text-lg truncate">{conversationName}</h2>
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <MoreHorizontal className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Moon className="h-4 w-4" />
-            <span className="ml-2 text-sm">Snooze</span>
+          <Button variant="ghost" size="sm" className="h-8">
+            <Moon className="h-4 w-4 mr-2" />
+            <span className="text-sm">Snooze</span>
           </Button>
-          <Button variant="default" size="sm" className="ml-2">
-            <X className="h-4 w-4 mr-1" />
+          <Button variant="default" size="sm" className="h-8">
+            <X className="h-4 w-4 mr-2" />
             Close
           </Button>
         </div>
@@ -69,28 +69,28 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
       </ScrollArea>
 
       {/* Action Bar */}
-      <div className="border-t">
-        <div className="p-3 flex items-center gap-2 flex-wrap">
-          <Button variant="ghost" size="sm" className="h-8 text-sm">
-            <Zap className="h-4 w-4 mr-1" />
+      <div className="border-t flex-shrink-0">
+        <div className="px-4 py-2 flex items-center gap-2 overflow-x-auto">
+          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
+            <Zap className="h-3 w-3 mr-1" />
             Use macro
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-sm">
-            <Smile className="h-4 w-4 mr-1" />
+          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
+            <Smile className="h-3 w-3 mr-1" />
             Insert emoji
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-sm">
+          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
             Write a note
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-sm">
-            <X className="h-4 w-4 mr-1" />
+          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
+            <X className="h-3 w-3 mr-1" />
             Close
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-sm">
+          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
             Snooze
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-sm">
-            <Paperclip className="h-4 w-4 mr-1" />
+          <Button variant="ghost" size="sm" className="h-8 text-xs whitespace-nowrap">
+            <Paperclip className="h-3 w-3 mr-1" />
             Upload
           </Button>
         </div>
@@ -99,14 +99,14 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
 
         {/* Input Area */}
         <div className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-muted-foreground">Y</span>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs text-muted-foreground">Y</span>
             <Input
               placeholder="Search actions"
-              className="flex-1 h-9 text-sm"
+              className="flex-1 h-8 text-sm"
             />
           </div>
-          <div className="flex items-end gap-2">
+          <div className="flex items-center gap-2">
             <Input
               placeholder="Type your message..."
               className="flex-1 h-10"

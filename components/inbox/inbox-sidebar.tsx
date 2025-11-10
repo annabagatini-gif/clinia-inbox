@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 
 export function InboxSidebar() {
   return (
-    <div className="w-64 border-r bg-background flex flex-col h-screen">
+    <div className="w-64 border-r bg-background flex flex-col flex-shrink-0 overflow-hidden">
       {/* Logo */}
       <div className="p-4 flex items-center gap-2">
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">

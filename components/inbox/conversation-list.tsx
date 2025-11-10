@@ -21,7 +21,7 @@ interface ConversationListProps {
 
 export function ConversationList({ selectedId, onSelect }: ConversationListProps) {
   return (
-    <div className="w-[380px] border-r bg-background flex flex-col h-screen">
+    <div className="w-[380px] border-r bg-background flex flex-col flex-shrink-0 overflow-hidden">
       {/* Header */}
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
