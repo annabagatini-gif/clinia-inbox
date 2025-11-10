@@ -152,13 +152,21 @@ export function ConversationListNew({
   const hasFilters =
     filterStatus !== "all" || filterTag !== "all" || filterUser !== "all";
 
+  // Títulos das abas em português
+  const tabTitles: Record<string, string> = {
+    all: "Todos os chats",
+    my: "Meus chats",
+    unassigned: "Chats não atribuídos",
+    groups: "Grupos",
+  };
+
   return (
     <TooltipProvider>
       <div className="w-[420px] border-r bg-background flex flex-col flex-shrink-0 overflow-hidden">
         {/* Header com Abas */}
         <div className="p-4 space-y-3 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">Inbox</h2>
+            <h2 className="font-semibold text-lg">{tabTitles[activeTab]}</h2>
             <div className="flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
