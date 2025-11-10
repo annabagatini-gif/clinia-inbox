@@ -491,13 +491,13 @@ function ConversationCard({
 }) {
   return (
     <div
-      className={`group relative py-3 pl-3 pr-4 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
+      className={`group relative py-3 ${selectionMode ? 'pl-2' : 'pl-3'} pr-4 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
         isSelected ? "bg-muted" : ""
       }`}
     >
       {/* Checkbox - só aparece no modo seleção */}
       {selectionMode && (
-        <div className="flex-shrink-0 flex items-center h-10">
+        <div className="flex-shrink-0 flex items-center h-10 w-6">
           <Checkbox
             checked={isChecked}
             onCheckedChange={() => onCheck(conversation.id)}
@@ -508,7 +508,7 @@ function ConversationCard({
 
       {/* Main Content */}
       <div
-        className="flex-1 min-w-0"
+        className="flex-1 min-w-0 overflow-hidden"
         onClick={() => onSelect(conversation.id)}
       >
         {/* Header Row */}
