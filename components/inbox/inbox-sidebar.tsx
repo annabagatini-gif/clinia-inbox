@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Inbox, Users, LayoutDashboard, ChevronRight } from "lucide-react";
+import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -20,6 +20,14 @@ export function InboxSidebar() {
       {/* Navigation */}
       <ScrollArea className="flex-1 min-h-0 px-3 py-4">
         <div className="space-y-1">
+          {/* Título Caixa de Entrada */}
+          <div className="flex items-center justify-between px-3 pb-3">
+            <h3 className="text-sm font-semibold">Caixa de Entrada</h3>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
+
           <Button
             variant="ghost"
             className="w-full justify-between gap-3 font-normal"
