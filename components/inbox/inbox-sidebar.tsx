@@ -22,10 +22,13 @@ export function InboxSidebar() {
         <div className="space-y-1">
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 font-normal"
+            className="w-full justify-between gap-3 font-normal"
           >
-            <Home className="h-4 w-4" />
-            Home
+            <div className="flex items-center gap-3">
+              <Home className="h-4 w-4" />
+              Todos os chats
+            </div>
+            <span className="text-xs text-muted-foreground">421</span>
           </Button>
 
           <Button
@@ -34,93 +37,50 @@ export function InboxSidebar() {
           >
             <div className="flex items-center gap-3">
               <Inbox className="h-4 w-4" />
-              Inbox
+              Meus chats
             </div>
             <span className="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">
               22
             </span>
           </Button>
 
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 font-normal"
+          >
+            Chats não atribuídos
+          </Button>
+
           <div className="pt-4">
-            <h3 className="px-3 text-xs font-medium text-muted-foreground mb-2">
-              INBOX
+            <h3 className="px-3 text-xs font-medium text-muted-foreground mb-2 uppercase">
+              Grupos
             </h3>
             
             <div className="space-y-1">
               <Button
                 variant="ghost"
-                className="w-full justify-between gap-3 font-normal text-sm"
+                className="w-full justify-start gap-3 font-normal text-sm"
               >
-                <span>Your Inbox</span>
-                <span className="text-xs text-muted-foreground">22</span>
+                <Users className="h-4 w-4" />
+                Grupo 1
               </Button>
 
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 font-normal text-sm"
               >
-                Mentions
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-between gap-3 font-normal text-sm"
-              >
-                <span>All</span>
-                <span className="text-xs text-muted-foreground">421</span>
+                <Users className="h-4 w-4" />
+                Grupo 2
               </Button>
 
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 font-normal text-sm"
               >
-                Unassigned
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 font-normal text-sm"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
+                <Users className="h-4 w-4" />
+                Grupo 3
               </Button>
             </div>
-          </div>
-
-          <div className="pt-4">
-            <Button
-              variant="ghost"
-              className="w-full justify-between gap-3 font-normal text-sm"
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className="h-3 w-3" />
-                <span>TEAMS</span>
-              </div>
-            </Button>
-          </div>
-
-          <div className="pt-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-between gap-3 font-normal text-sm"
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className="h-3 w-3" />
-                <span>TEAMMATES</span>
-              </div>
-            </Button>
-          </div>
-
-          <div className="pt-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-between gap-3 font-normal text-sm"
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className="h-3 w-3" />
-                <span>VIEWS</span>
-              </div>
-            </Button>
           </div>
         </div>
       </ScrollArea>
