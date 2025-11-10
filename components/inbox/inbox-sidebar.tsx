@@ -126,12 +126,12 @@ export function InboxSidebar() {
       </ScrollArea>
 
       {/* User Profile */}
-      <div className="p-3 border-t">
-        <Button variant="ghost" className="w-full justify-start gap-3 font-normal">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+      <div className="p-3 border-t flex-shrink-0">
+        <Button variant="ghost" className="w-full justify-start gap-3 font-normal h-12">
+          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
             U
           </div>
-          <span className="text-sm">User</span>
+          <span className="text-sm truncate">User</span>
         </Button>
       </div>
     </div>
