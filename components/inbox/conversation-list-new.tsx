@@ -189,12 +189,12 @@ export function ConversationListNew({
 
   const clearFilters = () => {
     setFilterStatus("all");
-    setFilterTag("all");
-    setFilterUser("all");
+    setFilterTags([]);
+    setFilterUsers([]);
   };
 
   const hasFilters =
-    filterStatus !== "all" || filterTag !== "all" || filterUser !== "all";
+    filterStatus !== "all" || filterTags.length > 0 || filterUsers.length > 0;
 
   // Títulos das abas em português
   const tabTitles: Record<string, string> = {
@@ -275,38 +275,99 @@ export function ConversationListNew({
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">
-                        Etiquetas
-                      </label>
-                      <Select value={filterTag} onValueChange={setFilterTag}>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
-                          <SelectItem value="Urgente">Urgente</SelectItem>
-                          <SelectItem value="Pagamento">Pagamento</SelectItem>
-                          <SelectItem value="Pedido">Pedido</SelectItem>
-                          <SelectItem value="Suporte">Suporte</SelectItem>
-                          <SelectItem value="Bug">Bug</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs text-muted-foreground">
+                          Etiquetas ({filterTags.length} selecionadas)
+                        </label>
+                        {filterTags.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs px-2"
+                            onClick={() => setFilterTags([])}
+                          >
+                            Limpar
+                          </Button>
+                        )}
+                      </div>
+                      <ScrollArea className="h-32 rounded border p-2">
+                        <div className="space-y-2">
+                          {allTags.map((tag) => (
+                            <div
+                              key={tag}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={`tag-${tag}`}
+                                checked={filterTags.includes(tag)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setFilterTags([...filterTags, tag]);
+                                  } else {
+                                    setFilterTags(
+                                      filterTags.filter((t) => t !== tag)
+                                    );
+                                  }
+                                }}
+                              />
+                              <label
+                                htmlFor={`tag-${tag}`}
+                                className="text-sm cursor-pointer flex-1"
+                              >
+                                {tag}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">
-                        Usuário
-                      </label>
-                      <Select value={filterUser} onValueChange={setFilterUser}>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos</SelectItem>
-                          <SelectItem value="user1">June Jensen</SelectItem>
-                          <SelectItem value="user2">Anna B</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs text-muted-foreground">
+                          Usuários ({filterUsers.length} selecionados)
+                        </label>
+                        {filterUsers.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs px-2"
+                            onClick={() => setFilterUsers([])}
+                          >
+                            Limpar
+                          </Button>
+                        )}
+                      </div>
+                      <ScrollArea className="h-40 rounded border p-2">
+                        <div className="space-y-2">
+                          {allUsers.map((user) => (
+                            <div
+                              key={user.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={`user-${user.id}`}
+                                checked={filterUsers.includes(user.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setFilterUsers([...filterUsers, user.id]);
+                                  } else {
+                                    setFilterUsers(
+                                      filterUsers.filter((u) => u !== user.id)
+                                    );
+                                  }
+                                }}
+                              />
+                              <label
+                                htmlFor={`user-${user.id}`}
+                                className="text-sm cursor-pointer flex-1"
+                              >
+                                {user.name}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     </div>
 
                     <Button
