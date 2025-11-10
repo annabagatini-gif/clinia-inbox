@@ -112,8 +112,11 @@ export function ConversationListNew({
     if (filterTag !== "all" && !conv.tags.includes(filterTag)) return false;
 
     // Filtro de usuário
-    if (filterUser !== "all" && conv.assignedTo?.id !== filterUser)
-      return false;
+    if (filterUser !== "all") {
+      if (filterUser === "unassigned" && conv.assignedTo) return false;
+      if (filterUser !== "unassigned" && conv.assignedTo?.id !== filterUser)
+        return false;
+    }
 
     return true;
   });

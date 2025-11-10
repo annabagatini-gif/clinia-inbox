@@ -94,17 +94,23 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             variant="ghost"
             onClick={() => onTabChange("all")}
             className={cn(
-              "w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg",
+              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg",
               activeTab === "all"
-                ? "bg-gray-200 text-gray-900 font-medium"
-                : "text-gray-700"
+                ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
+                : "text-gray-700 font-normal hover:bg-gray-200"
             )}
           >
             <div className="flex items-center gap-3">
               <Home className="h-5 w-5" />
               Todos os chats
             </div>
-            <span className="text-xs text-gray-500">421</span>
+            {activeTab === "all" ? (
+              <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
+                15
+              </span>
+            ) : (
+              <span className="text-xs text-gray-500">15</span>
+            )}
           </Button>
 
           <Button
@@ -123,10 +129,10 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             </div>
             {activeTab === "my" ? (
               <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                22
+                10
               </span>
             ) : (
-              <span className="text-xs text-gray-500">22</span>
+              <span className="text-xs text-gray-500">10</span>
             )}
           </Button>
 
@@ -134,16 +140,23 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             variant="ghost"
             onClick={() => onTabChange("unassigned")}
             className={cn(
-              "w-full justify-between gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg",
+              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg",
               activeTab === "unassigned"
-                ? "bg-gray-200 text-gray-900 font-medium"
-                : "text-gray-700"
+                ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
+                : "text-gray-700 font-normal hover:bg-gray-200"
             )}
           >
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5" />
               Chats não atribuídos
             </div>
+            {activeTab === "unassigned" ? (
+              <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
+                2
+              </span>
+            ) : (
+              <span className="text-xs text-gray-500">2</span>
+            )}
           </Button>
 
           <div className="pt-4">
