@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export function InboxSidebar() {
   return (
-    <div className="flex h-full flex-shrink-0">
+    <div className="flex h-full flex-shrink-0 gap-2">
       {/* Icon Bar - Lateral esquerda */}
       <div className="w-16 bg-[#F3F4F6] flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm">
         {/* Logo */}
@@ -31,33 +31,33 @@ export function InboxSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+          className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
-          <Home className="h-5 w-5" />
+          <Home className="h-6 w-6" />
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl bg-[#2C5866] text-white hover:bg-[#1E3A47]"
+          className="w-12 h-12 rounded-xl bg-[#2C5866] text-white hover:bg-[#1E3A47]"
         >
-          <MessageSquare className="h-5 w-5" />
+          <MessageSquare className="h-6 w-6" />
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+          className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
-          <UserCircle className="h-5 w-5" />
+          <UserCircle className="h-6 w-6" />
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+          className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
-          <Package className="h-5 w-5" />
+          <Package className="h-6 w-6" />
         </Button>
 
         {/* User Avatar at bottom */}
