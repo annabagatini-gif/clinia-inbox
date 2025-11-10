@@ -10,12 +10,12 @@ export function InboxSidebar() {
   return (
     <div className="flex h-full flex-shrink-0">
       {/* Icon Bar - Lateral esquerda */}
-      <div className="w-16 bg-[#1F2937] flex flex-col items-center py-4 gap-2">
+      <div className="w-16 bg-[#E5E7EB] flex flex-col items-center py-4 gap-2">
         {/* Logo */}
-        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+        <div className="w-10 h-10 rounded-xl bg-gray-300 flex items-center justify-center mb-4">
           <svg
             viewBox="0 0 24 24"
-            className="w-6 h-6 text-white"
+            className="w-6 h-6 text-gray-600"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -31,7 +31,7 @@ export function InboxSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10"
+          className="w-10 h-10 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
           <Home className="h-5 w-5" />
         </Button>
@@ -39,7 +39,7 @@ export function InboxSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl bg-white/20 text-white hover:bg-white/30"
+          className="w-10 h-10 rounded-xl bg-[#2C5866] text-white hover:bg-[#1E3A47]"
         >
           <MessageSquare className="h-5 w-5" />
         </Button>
@@ -47,7 +47,7 @@ export function InboxSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10"
+          className="w-10 h-10 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
           <UserCircle className="h-5 w-5" />
         </Button>
@@ -55,21 +55,21 @@ export function InboxSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10"
+          className="w-10 h-10 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
           <Package className="h-5 w-5" />
         </Button>
 
         {/* User Avatar at bottom */}
         <div className="mt-auto">
-          <div className="w-10 h-10 rounded-xl bg-[#1E3A47] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gray-600 flex items-center justify-center">
             <span className="text-white text-sm font-medium">U</span>
           </div>
         </div>
       </div>
 
       {/* Main Sidebar Content */}
-      <div className="w-64 bg-[#F7F8FA] flex flex-col flex-shrink-0 h-full">
+      <div className="w-64 bg-[#F7F8FA] flex flex-col flex-shrink-0 h-full rounded-tl-2xl shadow-sm ml-1">
 
       {/* Navigation */}
       <ScrollArea className="flex-1 min-h-0 px-3 py-4">
