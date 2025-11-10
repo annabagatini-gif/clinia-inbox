@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { InboxSidebar } from "@/components/inbox/inbox-sidebar";
-import { ConversationList } from "@/components/inbox/conversation-list";
+import { ConversationListNew } from "@/components/inbox/conversation-list-new";
 import { ChatArea } from "@/components/inbox/chat-area";
 import { mockConversations } from "@/lib/mock-data";
 
@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <InboxSidebar />
-      <ConversationList
+      <ConversationListNew
         selectedId={selectedConversationId}
         onSelect={setSelectedConversationId}
       />
