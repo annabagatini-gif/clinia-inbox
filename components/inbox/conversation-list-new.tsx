@@ -427,9 +427,9 @@ export function ConversationListNew({
                   </TooltipTrigger>
                   <TooltipContent>Filtros</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-[280px] p-3" align="end">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
+                <PopoverContent className="w-[280px] p-0" align="end">
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-3">
                       <h4 className="font-semibold text-sm">Filtros</h4>
                       {hasFilters && (
                         <Button
@@ -444,7 +444,7 @@ export function ConversationListNew({
                     </div>
 
                     {/* Status Filter */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 pb-3 border-b">
                       <label className="text-xs font-medium text-foreground">
                         Status
                       </label>
@@ -462,7 +462,7 @@ export function ConversationListNew({
                     </div>
 
                     {/* Tags Filter */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 py-3 border-b">
                       <label className="text-xs font-medium text-foreground">
                         Etiquetas {filterTags.length > 0 && `(${filterTags.length})`}
                       </label>
@@ -495,7 +495,7 @@ export function ConversationListNew({
                     </div>
 
                     {/* Users Filter */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 pt-3">
                       <label className="text-xs font-medium text-foreground">
                         Usuários {filterUsers.length > 0 && `(${filterUsers.length})`}
                       </label>
