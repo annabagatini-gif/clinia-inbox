@@ -261,7 +261,7 @@ export function ConversationListNew({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
                         <MessageSquarePlus className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
@@ -373,7 +373,7 @@ export function ConversationListNew({
                   <Button
                     variant={selectionMode ? "secondary" : "ghost"}
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 cursor-pointer"
                     onClick={() => {
                       setSelectionMode(!selectionMode);
                       if (selectionMode) {
@@ -392,7 +392,7 @@ export function ConversationListNew({
                   <Button
                     variant={hasFilters ? "secondary" : "ghost"}
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 cursor-pointer"
                   >
                     <Filter className="h-4 w-4" />
                   </Button>
