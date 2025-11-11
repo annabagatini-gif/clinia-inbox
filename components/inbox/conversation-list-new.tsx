@@ -466,8 +466,8 @@ export function ConversationListNew({
                       <label className="text-xs font-medium text-foreground">
                         Etiquetas {filterTags.length > 0 && `(${filterTags.length})`}
                       </label>
-                      <ScrollArea className="h-32">
-                        <div className="space-y-2 pr-2">
+                      <ScrollArea className="h-32 border rounded-md">
+                        <div className="space-y-2 p-2">
                           {allTags.map((tag) => (
                             <div key={tag} className="flex items-center space-x-2">
                               <Checkbox
@@ -499,8 +499,8 @@ export function ConversationListNew({
                       <label className="text-xs font-medium text-foreground">
                         Usuários {filterUsers.length > 0 && `(${filterUsers.length})`}
                       </label>
-                      <ScrollArea className="h-32">
-                        <div className="space-y-2 pr-2">
+                      <ScrollArea className="h-32 border rounded-md">
+                        <div className="space-y-2 p-2">
                           {allUsers.map((user) => (
                             <div key={user.id} className="flex items-center space-x-2">
                               <Checkbox
