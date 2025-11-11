@@ -15,17 +15,19 @@ export default function Home() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F1F3F4] p-2 gap-2">
-      <InboxSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <ConversationListNew
-        selectedId={selectedConversationId}
-        onSelect={setSelectedConversationId}
-        activeTab={activeTab}
-      />
-      <ChatArea
-        conversationId={selectedConversationId}
-        conversationName={selectedConversation?.name}
-      />
+    <div className="flex h-screen overflow-hidden bg-[#F1F3F4] p-2 gap-2 items-center justify-center">
+      <div className="flex h-full w-full max-w-[1800px] gap-2">
+        <InboxSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <ConversationListNew
+          selectedId={selectedConversationId}
+          onSelect={setSelectedConversationId}
+          activeTab={activeTab}
+        />
+        <ChatArea
+          conversationId={selectedConversationId}
+          conversationName={selectedConversation?.name}
+        />
+      </div>
     </div>
   );
 }
