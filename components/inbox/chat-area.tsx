@@ -45,7 +45,7 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
 
       {/* Messages Area */}
       <ScrollArea className="flex-1 p-6">
-        <div className="space-y-4 max-w-3xl">
+        <div className="space-y-4 max-w-4xl">
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.isUser ? 'justify-start' : 'justify-end'}`}>
               <div className={`max-w-[70%]`}>
