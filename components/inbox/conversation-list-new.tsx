@@ -166,8 +166,10 @@ export function ConversationListNew({
       return false;
     }
 
-    // Filtro de status
-    if (filterStatus !== "all" && conv.status !== filterStatus) return false;
+    // Filtro de status (multiselect)
+    if (filterStatus !== "all") {
+      if (conv.status !== filterStatus) return false;
+    }
 
     // Filtro de tags (multiselect)
     if (filterTags.length > 0) {
@@ -411,78 +413,93 @@ export function ConversationListNew({
               </Tooltip>
 
               <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 cursor-pointer"
-                  >
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80" align="end">
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-sm">Filtros</h4>
-
-                    <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground">
-                        Status
-                      </label>
-                      <Select
-                        value={filterStatus}
-                        onValueChange={setFilterStatus}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 cursor-pointer"
                       >
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos</SelectItem>
-                          <SelectItem value="open">Abertas</SelectItem>
-                          <SelectItem value="closed">Fechadas</SelectItem>
-                          <SelectItem value="blocked">Bloqueadas</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Filtros</TooltipContent>
+                </Tooltip>
+                <PopoverContent className="w-[360px] p-3" align="end">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm">Filtros</h4>
+                      {hasFilters && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs cursor-pointer"
+                          onClick={clearFilters}
+                        >
+                          Limpar tudo
+                        </Button>
+                      )}
                     </div>
 
+                    {/* Status Filter */}
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs text-muted-foreground">
-                          Etiquetas ({filterTags.length} selecionadas)
-                        </label>
-                        {filterTags.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs px-2"
-                            onClick={() => setFilterTags([])}
-                          >
-                            Limpar
-                          </Button>
-                        )}
-                      </div>
-                      <ScrollArea className="h-32 rounded border p-2">
-                        <div className="space-y-2">
-                          {allTags.map((tag) => (
-                            <div
-                              key={tag}
-                              className="flex items-center space-x-2"
+                      <label className="text-xs font-medium text-foreground">
+                        Status
+                      </label>
+                      <div className="space-y-2">
+                        {[
+                          { value: "all", label: "Todos" },
+                          { value: "open", label: "Abertas" },
+                          { value: "closed", label: "Fechadas" },
+                          { value: "blocked", label: "Bloqueadas" },
+                        ].map((status) => (
+                          <div key={status.value} className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id={`status-${status.value}`}
+                              name="status"
+                              checked={filterStatus === status.value}
+                              onChange={() => setFilterStatus(status.value)}
+                              className="cursor-pointer"
+                            />
+                            <label
+                              htmlFor={`status-${status.value}`}
+                              className="text-sm cursor-pointer"
                             >
-                              <Checkbox
+                              {status.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tags Filter */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-foreground">
+                        Etiquetas {filterTags.length > 0 && `(${filterTags.length})`}
+                      </label>
+                      <ScrollArea className="h-32">
+                        <div className="space-y-2 pr-2">
+                          {allTags.map((tag) => (
+                            <div key={tag} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
                                 id={`tag-${tag}`}
                                 checked={filterTags.includes(tag)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setFilterTags([...filterTags, tag]);
+                                onChange={() => {
+                                  if (filterTags.includes(tag)) {
+                                    setFilterTags(filterTags.filter((t) => t !== tag));
                                   } else {
-                                    setFilterTags(
-                                      filterTags.filter((t) => t !== tag)
-                                    );
+                                    setFilterTags([...filterTags, tag]);
                                   }
                                 }}
+                                className="cursor-pointer"
                               />
                               <label
                                 htmlFor={`tag-${tag}`}
-                                className="text-sm cursor-pointer flex-1"
+                                className="text-sm cursor-pointer"
                               >
                                 {tag}
                               </label>
@@ -492,45 +509,31 @@ export function ConversationListNew({
                       </ScrollArea>
                     </div>
 
+                    {/* Users Filter */}
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs text-muted-foreground">
-                          Usuários ({filterUsers.length} selecionados)
-                        </label>
-                        {filterUsers.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs px-2"
-                            onClick={() => setFilterUsers([])}
-                          >
-                            Limpar
-                          </Button>
-                        )}
-                      </div>
-                      <ScrollArea className="h-40 rounded border p-2">
-                        <div className="space-y-2">
+                      <label className="text-xs font-medium text-foreground">
+                        Usuários {filterUsers.length > 0 && `(${filterUsers.length})`}
+                      </label>
+                      <ScrollArea className="h-32">
+                        <div className="space-y-2 pr-2">
                           {allUsers.map((user) => (
-                            <div
-                              key={user.id}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
+                            <div key={user.id} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
                                 id={`user-${user.id}`}
                                 checked={filterUsers.includes(user.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setFilterUsers([...filterUsers, user.id]);
+                                onChange={() => {
+                                  if (filterUsers.includes(user.id)) {
+                                    setFilterUsers(filterUsers.filter((u) => u !== user.id));
                                   } else {
-                                    setFilterUsers(
-                                      filterUsers.filter((u) => u !== user.id)
-                                    );
+                                    setFilterUsers([...filterUsers, user.id]);
                                   }
                                 }}
+                                className="cursor-pointer"
                               />
                               <label
                                 htmlFor={`user-${user.id}`}
-                                className="text-sm cursor-pointer flex-1"
+                                className="text-sm cursor-pointer"
                               >
                                 {user.name}
                               </label>
@@ -539,15 +542,6 @@ export function ConversationListNew({
                         </div>
                       </ScrollArea>
                     </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={clearFilters}
-                    >
-                      Limpar filtros
-                    </Button>
                   </div>
                 </PopoverContent>
               </Popover>
@@ -640,6 +634,329 @@ export function ConversationListNew({
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Active Filters Badges */}
+          {hasFilters && (
+            <div className="flex flex-wrap gap-2 px-1">
+              {filterStatus.length > 0 && filterStatus.map((status) => (
+                <Badge
+                  key={status}
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1"
+                >
+                  Status: {status === "open" ? "Abertas" : status === "closed" ? "Fechadas" : "Bloqueadas"}
+                  <button
+                    onClick={() => setFilterStatus(filterStatus.filter((s) => s !== status))}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              
+              {filterTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1"
+                >
+                  {tag}
+                  <button
+                    onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              
+              {filterUsers.map((userId) => {
+                const user = allUsers.find((u) => u.id === userId);
+                return user ? (
+                  <Badge
+                    key={userId}
+                    variant="secondary"
+                    className="h-6 text-xs gap-1 pr-1"
+                  >
+                    {user.name}
+                    <button
+                      onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
+                      className="ml-1 hover:bg-muted rounded-sm p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ) : null;
+              })}
+
+              {hasFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs cursor-pointer"
+                  onClick={clearFilters}
+                >
+                  Limpar tudo
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Active Filters Badges */}
+          {hasFilters && (
+            <div className="flex flex-wrap gap-2 px-1 pb-2">
+              {filterStatus !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1"
+                >
+                  Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
+                  <button
+                    onClick={() => setFilterStatus("all")}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              
+              {filterTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1"
+                >
+                  {tag}
+                  <button
+                    onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              
+              {filterUsers.map((userId) => {
+                const user = allUsers.find((u) => u.id === userId);
+                return user ? (
+                  <Badge
+                    key={userId}
+                    variant="secondary"
+                    className="h-6 text-xs gap-1 pr-1"
+                  >
+                    {user.name}
+                    <button
+                      onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
+                      className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ) : null;
+              })}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs cursor-pointer"
+                onClick={clearFilters}
+              >
+                Limpar tudo
+              </Button>
+            </div>
+          )}
+
+          {/* Active Filters Badges */}
+          {hasFilters && (
+            <div className="flex flex-wrap gap-2 px-3 py-2 border-b">
+              {filterStatus !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1"
+                >
+                  Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
+                  <button
+                    onClick={() => setFilterStatus("all")}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              
+              {filterTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1"
+                >
+                  {tag}
+                  <button
+                    onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              
+              {filterUsers.map((userId) => {
+                const user = allUsers.find((u) => u.id === userId);
+                return user ? (
+                  <Badge
+                    key={userId}
+                    variant="secondary"
+                    className="h-6 text-xs gap-1 pr-1"
+                  >
+                    {user.name}
+                    <button
+                      onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
+                      className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ) : null;
+              })}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs cursor-pointer"
+                onClick={clearFilters}
+              >
+                Limpar tudo
+              </Button>
+            </div>
+          )}
+
+          {/* Active Filters Badges */}
+          {hasFilters && (
+            <div className="flex flex-wrap gap-2 px-3 py-2">
+              {filterStatus !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1 flex items-center"
+                >
+                  Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
+                  <button
+                    onClick={() => setFilterStatus("all")}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              
+              {filterTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1 flex items-center"
+                >
+                  {tag}
+                  <button
+                    onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              
+              {filterUsers.map((userId) => {
+                const user = allUsers.find((u) => u.id === userId);
+                return user ? (
+                  <Badge
+                    key={userId}
+                    variant="secondary"
+                    className="h-6 text-xs gap-1 pr-1 flex items-center"
+                  >
+                    {user.name}
+                    <button
+                      onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
+                      className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ) : null;
+              })}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs cursor-pointer"
+                onClick={clearFilters}
+              >
+                Limpar tudo
+              </Button>
+            </div>
+          )}
+
+          {/* Active Filters Badges */}
+          {hasFilters && (
+            <div className="flex flex-wrap gap-2 px-3 py-2 border-t">
+              {filterStatus !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1 flex items-center"
+                >
+                  Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
+                  <button
+                    onClick={() => setFilterStatus("all")}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              
+              {filterTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="h-6 text-xs gap-1 pr-1 flex items-center"
+                >
+                  {tag}
+                  <button
+                    onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
+                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              
+              {filterUsers.map((userId) => {
+                const user = allUsers.find((u) => u.id === userId);
+                return user ? (
+                  <Badge
+                    key={userId}
+                    variant="secondary"
+                    className="h-6 text-xs gap-1 pr-1 flex items-center"
+                  >
+                    {user.name}
+                    <button
+                      onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
+                      className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ) : null;
+              })}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs cursor-pointer"
+                onClick={clearFilters}
+              >
+                Limpar tudo
+              </Button>
             </div>
           )}
         </div>
