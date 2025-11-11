@@ -16,6 +16,8 @@ import {
   Trash2,
   Download,
   MessageSquarePlus,
+  MessageCircle,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -692,9 +694,9 @@ function ConversationCard({
                   <TooltipTrigger asChild>
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-background flex items-center justify-center border">
                       {conversation.channel === "whatsapp" ? (
-                        <span className="text-[10px] leading-[0] block" style={{ marginTop: '-1px' }}>💬</span>
+                        <span className="text-xs">💬</span>
                       ) : (
-                        <span className="text-[10px] leading-[0] block" style={{ marginTop: '-1px' }}>📷</span>
+                        <span className="text-xs block" style={{ transform: 'translateY(-0.5px)' }}>📷</span>
                       )}
                     </div>
                   </TooltipTrigger>
