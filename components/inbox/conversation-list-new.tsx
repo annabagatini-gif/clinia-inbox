@@ -288,7 +288,7 @@ export function ConversationListNew({
                     <div className="grid gap-2">
                       <Label htmlFor="connection">Conexão</Label>
                       <Select value={newConnection} onValueChange={setNewConnection}>
-                        <SelectTrigger id="connection">
+                        <SelectTrigger id="connection" className="w-full">
                           <SelectValue placeholder="Selecione o tipo de conexão" />
                         </SelectTrigger>
                         <SelectContent>
@@ -308,7 +308,7 @@ export function ConversationListNew({
                           <Input
                             id="country-code"
                             value={newCountryCode}
-                            onChange={(e) => setNewCountryCode(e.target.value)}
+                            onChange={(e) => setNewCountryCode(e.target.value.replace(/\D/g, ""))}
                             placeholder="55"
                             maxLength={3}
                           />
@@ -320,20 +320,26 @@ export function ConversationListNew({
                             onChange={(e) => setNewDDD(e.target.value.replace(/\D/g, ""))}
                             placeholder="DDD"
                             maxLength={2}
+                            className={newDDD && newDDD.length < 2 ? "border-red-500" : ""}
                           />
-                          <p className="text-xs text-muted-foreground mt-1">DDD</p>
                         </div>
                         <div className="flex-1">
                           <Input
                             id="phone"
                             value={newPhone}
                             onChange={(e) => setNewPhone(e.target.value.replace(/\D/g, ""))}
-                            placeholder="Número de telefone"
+                            placeholder="Número"
                             maxLength={9}
+                            className={newPhone && newPhone.length < 8 ? "border-red-500" : ""}
                           />
-                          <p className="text-xs text-muted-foreground mt-1">Número</p>
                         </div>
                       </div>
+                      {((newDDD && newDDD.length < 2) || (newPhone && newPhone.length < 8)) && (
+                        <p className="text-xs text-red-500">
+                          {newDDD && newDDD.length < 2 && "DDD deve ter 2 dígitos. "}
+                          {newPhone && newPhone.length < 8 && "Número deve ter 8 ou 9 dígitos."}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <DialogFooter>
@@ -347,7 +353,14 @@ export function ConversationListNew({
                     <Button
                       type="submit"
                       onClick={handleSaveNewConversation}
-                      disabled={!newContactName || !newConnection || !newDDD || !newPhone}
+                      disabled={
+                        !newContactName || 
+                        !newConnection || 
+                        !newDDD || 
+                        newDDD.length < 2 ||
+                        !newPhone || 
+                        newPhone.length < 8
+                      }
                     >
                       Salvar
                     </Button>

@@ -39,13 +39,13 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
-              >
-                <Home className="h-7 w-7" />
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300 cursor-pointer"
+                >
+                  <Home className="h-7 w-7" />
+                </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
               Início
@@ -59,7 +59,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300"
+                className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300 cursor-pointer"
               >
                 <Inbox className="h-7 w-7" />
               </Button>
@@ -76,7 +76,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300 cursor-pointer"
               >
                 <Bot className="h-7 w-7" />
               </Button>
@@ -93,7 +93,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300 cursor-pointer"
               >
                 <Workflow className="h-7 w-7" />
               </Button>
@@ -139,7 +139,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
           <div className="flex items-center justify-between px-2 pb-3 pt-2">
             <h3 className="text-base font-semibold text-gray-900">Caixa de Entrada</h3>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-gray-200">
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-gray-200 cursor-pointer">
                 <Search className="h-4 w-4 text-gray-600" />
               </Button>
             </div>
@@ -149,7 +149,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             variant="ghost"
             onClick={() => onTabChange("all")}
             className={cn(
-              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg",
+              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
               activeTab === "all"
                 ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
                 : "text-gray-700 font-normal hover:bg-gray-200"
@@ -172,7 +172,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             variant="ghost"
             onClick={() => onTabChange("my")}
             className={cn(
-              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg",
+              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
               activeTab === "my"
                 ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
                 : "text-gray-700 font-normal hover:bg-gray-200"
@@ -195,7 +195,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             variant="ghost"
             onClick={() => onTabChange("unassigned")}
             className={cn(
-              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg",
+              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
               activeTab === "unassigned"
                 ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
                 : "text-gray-700 font-normal hover:bg-gray-200"
