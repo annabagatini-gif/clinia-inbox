@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Moon, X, Smile, Paperclip, ArrowUp, Zap } from "lucide-react";
+import { MoreHorizontal, Moon, X, Smile, Paperclip, ArrowUp, Zap, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,9 +10,10 @@ import { mockMessages } from "@/lib/mock-data";
 interface ChatAreaProps {
   conversationId?: string;
   conversationName?: string;
+  onBack?: () => void;
 }
 
-export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
+export function ChatArea({ conversationId, conversationName, onBack }: ChatAreaProps) {
   const messages = conversationId ? mockMessages[conversationId] || [] : [];
 
   if (!conversationId) {
@@ -27,7 +28,19 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
     <div className="flex-1 flex flex-col bg-white overflow-hidden rounded-2xl shadow-md">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
-        <h2 className="font-semibold text-lg truncate">{conversationName}</h2>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 md:hidden flex-shrink-0"
+              onClick={onBack}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <h2 className="font-semibold text-lg truncate">{conversationName}</h2>
+        </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <MoreHorizontal className="h-4 w-4" />
