@@ -427,7 +427,7 @@ export function ConversationListNew({
                   </TooltipTrigger>
                   <TooltipContent>Filtros</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-[360px] p-3" align="end">
+                <PopoverContent className="w-[280px] p-3" align="end">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-semibold text-sm">Filtros</h4>
