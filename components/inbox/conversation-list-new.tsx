@@ -126,6 +126,7 @@ export function ConversationListNew({
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
   
   // Estados para modal de nova conversa
   const [isNewConversationOpen, setIsNewConversationOpen] = useState(false);
@@ -136,16 +137,16 @@ export function ConversationListNew({
   const [newPhone, setNewPhone] = useState("");
 
   // Calcula badges de contagem
-  const allCount = mockConversations.filter((c) => c.status === "open").length;
-  const myCount = mockConversations.filter(
+  const allCount = conversations.filter((c) => c.status === "open").length;
+  const myCount = conversations.filter(
     (c) => c.assignedTo?.id === "user1" && c.status === "open"
   ).length;
-  const unassignedCount = mockConversations.filter(
+  const unassignedCount = conversations.filter(
     (c) => !c.assignedTo && c.status === "open"
   ).length;
 
   // Filtra conversas
-  const filteredConversations = mockConversations.filter((conv) => {
+  const filteredConversations = conversations.filter((conv) => {
     // Filtro de aba
     if (activeTab === "all" && conv.status !== "open") return false;
     if (activeTab === "my" && (conv.assignedTo?.id !== "user1" || conv.status !== "open")) return false;
@@ -216,12 +217,29 @@ export function ConversationListNew({
     filterStatus !== "all" || filterTags.length > 0 || filterUsers.length > 0;
 
   const handleSaveNewConversation = () => {
-    // TODO: Implementar lógica de salvamento
-    console.log({
+    // Criar nova conversa
+    const newConversation: Conversation = {
+      id: `new-${Date.now()}`,
       name: newContactName,
-      connection: newConnection,
-      phone: `+${newCountryCode} ${newDDD} ${newPhone}`,
-    });
+      avatar: newContactName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2),
+      lastMessage: "Conversa iniciada",
+      timestamp: "agora",
+      unread: false,
+      unreadCount: 0,
+      channel: newConnection as "whatsapp" | "instagram",
+      tags: [],
+      isPinned: false,
+      isImportant: false,
+      assignedTo: {
+        id: "user1",
+        name: "June Jensen",
+        avatar: "JJ",
+      },
+      status: "open",
+    };
+    
+    // Adicionar nova conversa no início da lista
+    setConversations([newConversation, ...conversations]);
     
     // Limpar formulário
     setNewContactName("");
@@ -347,6 +365,7 @@ export function ConversationListNew({
                       type="button"
                       variant="outline"
                       onClick={handleCancelNewConversation}
+                      className="cursor-pointer"
                     >
                       Cancelar
                     </Button>
@@ -361,6 +380,7 @@ export function ConversationListNew({
                         !newPhone || 
                         newPhone.length < 8
                       }
+                      className="cursor-pointer"
                     >
                       Salvar
                     </Button>
