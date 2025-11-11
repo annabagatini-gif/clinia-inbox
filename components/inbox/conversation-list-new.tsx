@@ -258,16 +258,16 @@ export function ConversationListNew({
             <h2 className="font-semibold text-lg">{tabTitles[activeTab]}</h2>
             <div className="flex items-center gap-1">
               <Dialog open={isNewConversationOpen} onOpenChange={setIsNewConversationOpen}>
-                <DialogTrigger asChild>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MessageSquarePlus className="h-4 w-4" />
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Nova conversa</TooltipContent>
-                  </Tooltip>
-                </DialogTrigger>
+                    </DialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Nova conversa</TooltipContent>
+                </Tooltip>
                 <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
                     <DialogTitle>Adicionar nova conversa</DialogTitle>
