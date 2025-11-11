@@ -692,9 +692,9 @@ function ConversationCard({
                   <TooltipTrigger asChild>
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-background flex items-center justify-center border">
                       {conversation.channel === "whatsapp" ? (
-                        <span className="text-xs">💬</span>
+                        <span className="text-xs leading-none">💬</span>
                       ) : (
-                        <span className="text-xs">📷</span>
+                        <span className="text-xs leading-none flex items-center justify-center">📷</span>
                       )}
                     </div>
                   </TooltipTrigger>
