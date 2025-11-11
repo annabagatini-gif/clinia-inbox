@@ -18,7 +18,7 @@ export function ChatArea({ conversationId, conversationName, onBack }: ChatAreaP
 
   if (!conversationId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-muted/10">
+      <div className="flex-1 flex items-center justify-center bg-white rounded-2xl shadow-md h-full">
         <p className="text-muted-foreground">Selecione uma conversa para iniciar</p>
       </div>
     );
