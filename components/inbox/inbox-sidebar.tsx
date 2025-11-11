@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare } from "lucide-react";
+import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare, Bot, Workflow } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -53,7 +53,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             size="icon"
             className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300"
           >
-            <MessageSquare className="h-6 w-6" />
+            <Inbox className="h-6 w-6" />
           </Button>
 
         <Button
@@ -61,7 +61,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
           size="icon"
           className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
-          <UserCircle className="h-6 w-6" />
+          <Bot className="h-6 w-6" />
         </Button>
 
         <Button
@@ -69,7 +69,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
           size="icon"
           className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
         >
-          <Package className="h-6 w-6" />
+          <Workflow className="h-6 w-6" />
         </Button>
 
         {/* Bottom Icons */}
