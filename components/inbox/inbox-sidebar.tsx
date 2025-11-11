@@ -24,18 +24,20 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
         {/* Icon Bar - Lateral esquerda */}
         <div className="w-16 bg-[#F1F3F4] flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm">
         {/* Logo */}
-        <div className="w-10 h-10 rounded-xl bg-gray-300 flex items-center justify-center mb-4">
+        <div className="w-10 h-10 rounded-xl bg-[#2C5866] flex items-center justify-center mb-4">
           <svg
-            viewBox="0 0 24 24"
-            className="w-6 h-6 text-gray-600"
+            viewBox="0 0 100 100"
+            className="w-7 h-7"
             fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
           >
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-            <path d="M8 12h8M12 8v8" />
+            <path
+              d="M30 25 Q 25 30, 25 40 Q 25 55, 35 65 Q 40 70, 50 72 L 50 75 L 48 75 Q 45 75, 45 78 L 45 82 Q 45 85, 48 85 L 52 85 Q 55 85, 55 82 L 55 78 Q 55 75, 52 75 L 50 75 L 50 72 Q 60 70, 65 65 Q 75 55, 75 40 Q 75 30, 70 25"
+              stroke="white"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle cx="73" cy="78" r="4" fill="white" />
           </svg>
         </div>
 
