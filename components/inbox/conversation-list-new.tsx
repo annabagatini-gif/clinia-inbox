@@ -669,12 +669,21 @@ function ConversationCard({
 
           <div className="flex items-center gap-2 flex-shrink-0">
             {conversation.unreadCount > 0 && (
-              <Badge
-                variant="default"
-                className="rounded-full h-5 min-w-5 px-1.5 text-xs"
-              >
-                {conversation.unreadCount}
-              </Badge>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Badge
+                      variant="default"
+                      className="rounded-full h-5 min-w-5 px-1.5 text-xs"
+                    >
+                      {conversation.unreadCount}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {conversation.unreadCount} {conversation.unreadCount === 1 ? 'mensagem não lida' : 'mensagens não lidas'}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             {conversation.assignedTo && (
