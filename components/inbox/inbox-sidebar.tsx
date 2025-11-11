@@ -165,10 +165,10 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             </div>
             {activeTab === "all" ? (
               <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                15
+                13
               </span>
             ) : (
-              <span className="text-xs text-gray-500">15</span>
+              <span className="text-xs text-gray-500">13</span>
             )}
           </Button>
 
@@ -188,10 +188,10 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             </div>
             {activeTab === "my" ? (
               <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                10
+                8
               </span>
             ) : (
-              <span className="text-xs text-gray-500">10</span>
+              <span className="text-xs text-gray-500">8</span>
             )}
           </Button>
 
@@ -211,10 +211,10 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             </div>
             {activeTab === "unassigned" ? (
               <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                2
+                3
               </span>
             ) : (
-              <span className="text-xs text-gray-500">2</span>
+              <span className="text-xs text-gray-500">3</span>
             )}
           </Button>
 
