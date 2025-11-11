@@ -48,6 +48,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { mockConversations } from "@/lib/mock-data";
 import { Conversation } from "@/types/inbox";
 
@@ -116,6 +126,14 @@ export function ConversationListNew({
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
+  
+  // Estados para modal de nova conversa
+  const [isNewConversationOpen, setIsNewConversationOpen] = useState(false);
+  const [newContactName, setNewContactName] = useState("");
+  const [newConnection, setNewConnection] = useState("");
+  const [newCountryCode, setNewCountryCode] = useState("55");
+  const [newDDD, setNewDDD] = useState("");
+  const [newPhone, setNewPhone] = useState("");
 
   // Calcula badges de contagem
   const allCount = mockConversations.filter((c) => c.status === "open").length;
@@ -197,6 +215,32 @@ export function ConversationListNew({
   const hasFilters =
     filterStatus !== "all" || filterTags.length > 0 || filterUsers.length > 0;
 
+  const handleSaveNewConversation = () => {
+    // TODO: Implementar lógica de salvamento
+    console.log({
+      name: newContactName,
+      connection: newConnection,
+      phone: `+${newCountryCode} ${newDDD} ${newPhone}`,
+    });
+    
+    // Limpar formulário
+    setNewContactName("");
+    setNewConnection("");
+    setNewCountryCode("55");
+    setNewDDD("");
+    setNewPhone("");
+    setIsNewConversationOpen(false);
+  };
+
+  const handleCancelNewConversation = () => {
+    setNewContactName("");
+    setNewConnection("");
+    setNewCountryCode("55");
+    setNewDDD("");
+    setNewPhone("");
+    setIsNewConversationOpen(false);
+  };
+
   // Títulos das abas em português
   const tabTitles: Record<string, string> = {
     all: "Todos os chats",
@@ -213,14 +257,103 @@ export function ConversationListNew({
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">{tabTitles[activeTab]}</h2>
             <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MessageSquarePlus className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Nova conversa</TooltipContent>
-              </Tooltip>
+              <Dialog open={isNewConversationOpen} onOpenChange={setIsNewConversationOpen}>
+                <DialogTrigger asChild>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MessageSquarePlus className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Nova conversa</TooltipContent>
+                  </Tooltip>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Adicionar nova conversa</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    {/* Nome do contato */}
+                    <div className="grid gap-2">
+                      <Label htmlFor="contact-name">Nome do contato</Label>
+                      <Input
+                        id="contact-name"
+                        value={newContactName}
+                        onChange={(e) => setNewContactName(e.target.value)}
+                        placeholder="Digite o nome do contato"
+                      />
+                    </div>
+
+                    {/* Conexão */}
+                    <div className="grid gap-2">
+                      <Label htmlFor="connection">Conexão</Label>
+                      <Select value={newConnection} onValueChange={setNewConnection}>
+                        <SelectTrigger id="connection">
+                          <SelectValue placeholder="Selecione o tipo de conexão" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                          <SelectItem value="instagram">Instagram</SelectItem>
+                          <SelectItem value="telegram">Telegram</SelectItem>
+                          <SelectItem value="messenger">Messenger</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Telefone */}
+                    <div className="grid gap-2">
+                      <Label>Telefone</Label>
+                      <div className="flex gap-2">
+                        <div className="w-20">
+                          <Input
+                            id="country-code"
+                            value={newCountryCode}
+                            onChange={(e) => setNewCountryCode(e.target.value)}
+                            placeholder="55"
+                            maxLength={3}
+                          />
+                        </div>
+                        <div className="w-24">
+                          <Input
+                            id="ddd"
+                            value={newDDD}
+                            onChange={(e) => setNewDDD(e.target.value.replace(/\D/g, ""))}
+                            placeholder="DDD"
+                            maxLength={2}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">DDD</p>
+                        </div>
+                        <div className="flex-1">
+                          <Input
+                            id="phone"
+                            value={newPhone}
+                            onChange={(e) => setNewPhone(e.target.value.replace(/\D/g, ""))}
+                            placeholder="Número de telefone"
+                            maxLength={9}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Número</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancelNewConversation}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      onClick={handleSaveNewConversation}
+                      disabled={!newContactName || !newConnection || !newDDD || !newPhone}
+                    >
+                      Salvar
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <Tooltip>
                 <TooltipTrigger asChild>
