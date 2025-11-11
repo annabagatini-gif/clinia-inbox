@@ -40,37 +40,73 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
         </div>
 
         {/* Navigation Icons */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
-        >
-          <Home className="h-6 w-6" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+              >
+                <Home className="h-6 w-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Início
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300"
-          >
-            <Inbox className="h-6 w-6" />
-          </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300"
+              >
+                <Inbox className="h-6 w-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Caixa de entrada
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
-        >
-          <Bot className="h-6 w-6" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+              >
+                <Bot className="h-6 w-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Agentes
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
-        >
-          <Workflow className="h-6 w-6" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+              >
+                <Workflow className="h-6 w-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Fluxos
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* Bottom Icons */}
         <div className="mt-auto flex flex-col items-center gap-2">
