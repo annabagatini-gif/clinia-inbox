@@ -10,6 +10,7 @@ import {
   Star,
   Check,
   CheckCheck,
+  CheckSquare,
   Mail,
   MailOpen,
   Ban,
@@ -402,10 +403,10 @@ export function ConversationListNew({
                       }
                     }}
                   >
-                    <CheckCheck className="h-4 w-4" />
+                    <CheckSquare className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Selecionar múltiplas</TooltipContent>
+                <TooltipContent>Selecionar conversas</TooltipContent>
               </Tooltip>
 
               <Popover>
@@ -598,18 +599,35 @@ export function ConversationListNew({
 
           {/* Select All Checkbox */}
           {selectionMode && sortedConversations.length > 0 && (
-            <div className="flex items-center gap-2 px-1">
-              <Checkbox
-                checked={
-                  selectedConversations.length === sortedConversations.length
-                }
-                onCheckedChange={handleSelectAll}
-              />
-              <span className="text-xs text-muted-foreground">
-                {selectedConversations.length > 0
-                  ? `${selectedConversations.length} selecionada(s)`
-                  : "Selecionar todas"}
-              </span>
+            <div className="flex items-center justify-between px-1 min-h-[28px]">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={
+                    selectedConversations.length === sortedConversations.length &&
+                    selectedConversations.length > 0
+                  }
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {selectedConversations.length > 0
+                    ? `${selectedConversations.length} selecionada(s)`
+                    : "Selecionar todas"}
+                </span>
+              </div>
+              <div className="flex items-center">
+                {selectedConversations.length > 0 ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs cursor-pointer"
+                    onClick={() => setSelectedConversations([])}
+                  >
+                    Limpar seleção
+                  </Button>
+                ) : (
+                  <div className="h-7 w-[100px]"></div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -659,13 +677,13 @@ function ConversationCard({
 }) {
   return (
     <div
-      className={`group relative py-3 ${selectionMode ? 'pl-2' : 'pl-3'} pr-4 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
-        isSelected ? "bg-muted" : ""
-      }`}
+      className={`group relative py-3 pr-4 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
+        selectionMode ? 'pl-2' : 'pl-3'
+      } ${isSelected ? "bg-muted" : ""}`}
     >
       {/* Checkbox - só aparece no modo seleção */}
       {selectionMode && (
-        <div className="flex-shrink-0 flex items-center h-10 w-6">
+        <div className="flex-shrink-0 flex items-center h-10">
           <Checkbox
             checked={isChecked}
             onCheckedChange={() => onCheck(conversation.id)}
