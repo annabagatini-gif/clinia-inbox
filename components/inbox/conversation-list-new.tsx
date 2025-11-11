@@ -393,7 +393,7 @@ export function ConversationListNew({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant={selectionMode ? "secondary" : "ghost"}
+                    variant="ghost"
                     size="icon"
                     className="h-8 w-8 cursor-pointer"
                     onClick={() => {
@@ -412,7 +412,7 @@ export function ConversationListNew({
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={hasFilters ? "secondary" : "ghost"}
+                    variant="ghost"
                     size="icon"
                     className="h-8 w-8 cursor-pointer"
                   >
