@@ -24,7 +24,7 @@ export function ChatArea({ conversationId, conversationName }: ChatAreaProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden rounded-2xl shadow-md max-w-[900px]">
+    <div className="flex-1 flex flex-col bg-white overflow-hidden rounded-2xl shadow-md">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
         <h2 className="font-semibold text-lg truncate">{conversationName}</h2>
