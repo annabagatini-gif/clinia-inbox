@@ -44,7 +44,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
                 size="icon"
                 className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
               >
-                <Home className="h-6 w-6" />
+                <Home className="h-7 w-7" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
@@ -61,7 +61,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
                 size="icon"
                 className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300"
               >
-                <Inbox className="h-6 w-6" />
+                <Inbox className="h-7 w-7" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
@@ -78,7 +78,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
                 size="icon"
                 className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
               >
-                <Bot className="h-6 w-6" />
+                <Bot className="h-7 w-7" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
@@ -95,7 +95,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
                 size="icon"
                 className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
               >
-                <Workflow className="h-6 w-6" />
+                <Workflow className="h-7 w-7" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
@@ -114,7 +114,7 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
                   size="icon"
                   className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
                 >
-                  <MessagesSquare className="h-6 w-6" />
+                  <MessagesSquare className="h-7 w-7" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
