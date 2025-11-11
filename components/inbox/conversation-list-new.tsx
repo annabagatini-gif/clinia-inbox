@@ -19,6 +19,7 @@ import {
   MessageSquarePlus,
   MessageCircle,
   Camera,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -614,7 +615,7 @@ export function ConversationListNew({
                     : "Selecionar todas"}
                 </span>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center gap-1">
                 {selectedConversations.length > 0 ? (
                   <Button
                     variant="ghost"
@@ -627,6 +628,17 @@ export function ConversationListNew({
                 ) : (
                   <div className="h-7 w-[100px]"></div>
                 )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 cursor-pointer"
+                  onClick={() => {
+                    setSelectionMode(false);
+                    setSelectedConversations([]);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           )}
