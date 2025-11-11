@@ -448,31 +448,17 @@ export function ConversationListNew({
                       <label className="text-xs font-medium text-foreground">
                         Status
                       </label>
-                      <div className="space-y-2">
-                        {[
-                          { value: "all", label: "Todos" },
-                          { value: "open", label: "Abertas" },
-                          { value: "closed", label: "Fechadas" },
-                          { value: "blocked", label: "Bloqueadas" },
-                        ].map((status) => (
-                          <div key={status.value} className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id={`status-${status.value}`}
-                              name="status"
-                              checked={filterStatus === status.value}
-                              onChange={() => setFilterStatus(status.value)}
-                              className="cursor-pointer"
-                            />
-                            <label
-                              htmlFor={`status-${status.value}`}
-                              className="text-sm cursor-pointer"
-                            >
-                              {status.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Selecione um status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="open">Abertas</SelectItem>
+                          <SelectItem value="closed">Fechadas</SelectItem>
+                          <SelectItem value="blocked">Bloqueadas</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Tags Filter */}
@@ -484,11 +470,10 @@ export function ConversationListNew({
                         <div className="space-y-2 pr-2">
                           {allTags.map((tag) => (
                             <div key={tag} className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 id={`tag-${tag}`}
                                 checked={filterTags.includes(tag)}
-                                onChange={() => {
+                                onCheckedChange={() => {
                                   if (filterTags.includes(tag)) {
                                     setFilterTags(filterTags.filter((t) => t !== tag));
                                   } else {
@@ -499,7 +484,7 @@ export function ConversationListNew({
                               />
                               <label
                                 htmlFor={`tag-${tag}`}
-                                className="text-sm cursor-pointer"
+                                className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                               >
                                 {tag}
                               </label>
@@ -518,11 +503,10 @@ export function ConversationListNew({
                         <div className="space-y-2 pr-2">
                           {allUsers.map((user) => (
                             <div key={user.id} className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 id={`user-${user.id}`}
                                 checked={filterUsers.includes(user.id)}
-                                onChange={() => {
+                                onCheckedChange={() => {
                                   if (filterUsers.includes(user.id)) {
                                     setFilterUsers(filterUsers.filter((u) => u !== user.id));
                                   } else {
@@ -533,7 +517,7 @@ export function ConversationListNew({
                               />
                               <label
                                 htmlFor={`user-${user.id}`}
-                                className="text-sm cursor-pointer"
+                                className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                               >
                                 {user.name}
                               </label>
