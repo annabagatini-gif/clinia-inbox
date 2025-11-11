@@ -182,12 +182,11 @@ export function ConversationListNew({
     return true;
   });
 
-  // Ordena: pinned first, then important, then by timestamp
+  // Ordena: pinned first, then by timestamp
   const sortedConversations = [...filteredConversations].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
-    if (a.isImportant && !b.isImportant) return -1;
-    if (!a.isImportant && b.isImportant) return 1;
+    // TODO: Implementar ordenação por timestamp real
     return 0;
   });
 
