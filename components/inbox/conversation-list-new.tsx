@@ -129,8 +129,9 @@ export function ConversationListNew({
   // Filtra conversas
   const filteredConversations = mockConversations.filter((conv) => {
     // Filtro de aba
-    if (activeTab === "my" && conv.assignedTo?.id !== "user1") return false;
-    if (activeTab === "unassigned" && conv.assignedTo) return false;
+    if (activeTab === "all" && conv.status !== "open") return false;
+    if (activeTab === "my" && (conv.assignedTo?.id !== "user1" || conv.status !== "open")) return false;
+    if (activeTab === "unassigned" && (conv.assignedTo || conv.status !== "open")) return false;
     if (activeTab === "groups") return false; // TODO: adicionar lógica de grupos
 
     // Filtro de busca
