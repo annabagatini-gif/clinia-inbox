@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package } from "lucide-react";
+import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -66,8 +72,25 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
           <Package className="h-6 w-6" />
         </Button>
 
-        {/* User Avatar at bottom */}
-        <div className="mt-auto">
+        {/* Bottom Icons */}
+        <div className="mt-auto flex flex-col items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+                >
+                  <MessagesSquare className="h-6 w-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Iniciar conversa interna
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <div className="w-10 h-10 rounded-xl bg-gray-600 flex items-center justify-center">
             <span className="text-white text-sm font-medium">U</span>
           </div>
