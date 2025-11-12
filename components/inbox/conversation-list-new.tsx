@@ -468,10 +468,10 @@ export function ConversationListNew({
                     <div className="flex flex-wrap gap-2 pb-3 mb-3 border-b">
                       <Badge
                         onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
-                        className={`h-7 px-3 text-xs cursor-pointer transition-colors ${
+                        className={`h-7 px-3 text-xs cursor-pointer transition-all ${
                           filterUnreadOnly
-                            ? "bg-blue-500 text-white hover:bg-blue-600"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            ? "bg-slate-200 text-slate-900 hover:bg-slate-300 border border-slate-400"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-transparent"
                         }`}
                       >
                         <MailOpen className="h-3 w-3 mr-1.5" />
@@ -480,10 +480,10 @@ export function ConversationListNew({
                       
                       <Badge
                         onClick={() => setFilterImportantOnly(!filterImportantOnly)}
-                        className={`h-7 px-3 text-xs cursor-pointer transition-colors ${
+                        className={`h-7 px-3 text-xs cursor-pointer transition-all ${
                           filterImportantOnly
-                            ? "bg-amber-500 text-white hover:bg-amber-600"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            ? "bg-slate-200 text-slate-900 hover:bg-slate-300 border border-slate-400"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-transparent"
                         }`}
                       >
                         <Star className="h-3 w-3 mr-1.5" />
