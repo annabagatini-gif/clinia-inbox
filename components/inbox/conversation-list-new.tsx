@@ -419,6 +419,22 @@ export function ConversationListNew({
                 <TooltipContent>Selecionar conversas</TooltipContent>
               </Tooltip>
 
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={filterUnreadOnly ? "default" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8 cursor-pointer"
+                    onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
+                  >
+                    <MailOpen className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {filterUnreadOnly ? "Mostrar todas" : "Apenas não lidas"}
+                </TooltipContent>
+              </Tooltip>
+
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -482,24 +498,6 @@ export function ConversationListNew({
                           <SelectItem value="blocked">Bloqueadas</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-
-                    {/* Unread Filter */}
-                    <div className="py-3 border-b">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="filter-unread"
-                          checked={filterUnreadOnly}
-                          onCheckedChange={(checked) => setFilterUnreadOnly(checked as boolean)}
-                          className="cursor-pointer"
-                        />
-                        <label
-                          htmlFor="filter-unread"
-                          className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-medium"
-                        >
-                          Apenas não lidas
-                        </label>
-                      </div>
                     </div>
 
                     {/* Tags Filter */}
