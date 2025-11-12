@@ -446,8 +446,13 @@ export function ConversationListNew({
                   </TooltipTrigger>
                   <TooltipContent>Filtros</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-[280px] p-0 max-h-[calc(100vh-140px)]" align="end">
-                  <ScrollArea className="max-h-[calc(100vh-140px)]">
+                <PopoverContent 
+                  className="w-[280px] p-0" 
+                  align="end"
+                  side="bottom"
+                  sideOffset={8}
+                >
+                  <ScrollArea className="max-h-[calc(100vh-200px)]">
                   <div className="p-3">
                     <div className="flex items-center justify-between mb-3 min-h-[28px]">
                       <h4 className="font-semibold text-sm">Filtros</h4>
