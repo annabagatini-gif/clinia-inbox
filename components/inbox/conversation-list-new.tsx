@@ -127,6 +127,7 @@ export function ConversationListNew({
     []
   );
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterUnreadOnly, setFilterUnreadOnly] = useState<boolean>(false);
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
@@ -169,6 +170,11 @@ export function ConversationListNew({
     // Filtro de status (multiselect)
     if (filterStatus !== "all") {
       if (conv.status !== filterStatus) return false;
+    }
+
+    // Filtro de não lidas
+    if (filterUnreadOnly) {
+      if (!conv.unread) return false;
     }
 
     // Filtro de tags (multiselect)
@@ -214,12 +220,13 @@ export function ConversationListNew({
 
   const clearFilters = () => {
     setFilterStatus("all");
+    setFilterUnreadOnly(false);
     setFilterTags([]);
     setFilterUsers([]);
   };
 
   const hasFilters =
-    filterStatus !== "all" || filterTags.length > 0 || filterUsers.length > 0;
+    filterStatus !== "all" || filterUnreadOnly || filterTags.length > 0 || filterUsers.length > 0;
 
   const handleSaveNewConversation = () => {
     // Criar nova conversa
@@ -447,20 +454,22 @@ export function ConversationListNew({
 
                     {/* Status Filter */}
                     <div className="space-y-2 pb-3 border-b">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between min-h-[24px]">
                         <label className="text-xs font-medium text-foreground">
                           Status
                         </label>
-                        {filterStatus !== "all" && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs cursor-pointer text-blue-600 hover:text-blue-700"
-                            onClick={() => setFilterStatus("all")}
-                          >
-                            Limpar
-                          </Button>
-                        )}
+                        <div className="w-[60px] flex justify-end">
+                          {filterStatus !== "all" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-xs cursor-pointer text-blue-600 hover:text-blue-700"
+                              onClick={() => setFilterStatus("all")}
+                            >
+                              Limpar
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger className="h-9">
@@ -475,22 +484,42 @@ export function ConversationListNew({
                       </Select>
                     </div>
 
+                    {/* Unread Filter */}
+                    <div className="py-3 border-b">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="filter-unread"
+                          checked={filterUnreadOnly}
+                          onCheckedChange={(checked) => setFilterUnreadOnly(checked as boolean)}
+                          className="cursor-pointer"
+                        />
+                        <label
+                          htmlFor="filter-unread"
+                          className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-medium"
+                        >
+                          Apenas não lidas
+                        </label>
+                      </div>
+                    </div>
+
                     {/* Tags Filter */}
                     <div className="space-y-2 py-3 border-b">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between min-h-[24px]">
                         <label className="text-xs font-medium text-foreground">
                           Etiquetas {filterTags.length > 0 && `(${filterTags.length})`}
                         </label>
-                        {filterTags.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs cursor-pointer text-purple-600 hover:text-purple-700"
-                            onClick={() => setFilterTags([])}
-                          >
-                            Limpar
-                          </Button>
-                        )}
+                        <div className="w-[60px] flex justify-end">
+                          {filterTags.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-xs cursor-pointer text-purple-600 hover:text-purple-700"
+                              onClick={() => setFilterTags([])}
+                            >
+                              Limpar
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <ScrollArea className="h-32">
                         <div className="space-y-2 pr-2">
@@ -522,20 +551,22 @@ export function ConversationListNew({
 
                     {/* Users Filter */}
                     <div className="space-y-2 pt-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between min-h-[24px]">
                         <label className="text-xs font-medium text-foreground">
                           Usuários {filterUsers.length > 0 && `(${filterUsers.length})`}
                         </label>
-                        {filterUsers.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs cursor-pointer text-green-600 hover:text-green-700"
-                            onClick={() => setFilterUsers([])}
-                          >
-                            Limpar
-                          </Button>
-                        )}
+                        <div className="w-[60px] flex justify-end">
+                          {filterUsers.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-xs cursor-pointer text-green-600 hover:text-green-700"
+                              onClick={() => setFilterUsers([])}
+                            >
+                              Limpar
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <ScrollArea className="h-32">
                         <div className="space-y-2 pr-2">
@@ -672,6 +703,21 @@ export function ConversationListNew({
                       Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
                       <button
                         onClick={() => setFilterStatus("all")}
+                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+
+                  {filterUnreadOnly && (
+                    <Badge
+                      variant="secondary"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center"
+                    >
+                      Não lidas
+                      <button
+                        onClick={() => setFilterUnreadOnly(false)}
                         className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
