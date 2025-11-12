@@ -429,25 +429,39 @@ export function ConversationListNew({
                 </Tooltip>
                 <PopoverContent className="w-[280px] p-0" align="end">
                   <div className="p-3">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-3 min-h-[28px]">
                       <h4 className="font-semibold text-sm">Filtros</h4>
-                      {hasFilters && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs cursor-pointer"
-                          onClick={clearFilters}
-                        >
-                          Limpar tudo
-                        </Button>
-                      )}
+                      <div className="w-[84px] flex justify-end">
+                        {hasFilters && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs cursor-pointer"
+                            onClick={clearFilters}
+                          >
+                            Limpar tudo
+                          </Button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Status Filter */}
                     <div className="space-y-2 pb-3 border-b">
-                      <label className="text-xs font-medium text-foreground">
-                        Status
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-foreground">
+                          Status
+                        </label>
+                        {filterStatus !== "all" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs cursor-pointer text-blue-600 hover:text-blue-700"
+                            onClick={() => setFilterStatus("all")}
+                          >
+                            Limpar
+                          </Button>
+                        )}
+                      </div>
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger className="h-9">
                           <SelectValue placeholder="Selecione um status" />
@@ -463,9 +477,21 @@ export function ConversationListNew({
 
                     {/* Tags Filter */}
                     <div className="space-y-2 py-3 border-b">
-                      <label className="text-xs font-medium text-foreground">
-                        Etiquetas {filterTags.length > 0 && `(${filterTags.length})`}
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-foreground">
+                          Etiquetas {filterTags.length > 0 && `(${filterTags.length})`}
+                        </label>
+                        {filterTags.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs cursor-pointer text-purple-600 hover:text-purple-700"
+                            onClick={() => setFilterTags([])}
+                          >
+                            Limpar
+                          </Button>
+                        )}
+                      </div>
                       <ScrollArea className="h-32">
                         <div className="space-y-2 pr-2">
                           {allTags.map((tag) => (
@@ -496,9 +522,21 @@ export function ConversationListNew({
 
                     {/* Users Filter */}
                     <div className="space-y-2 pt-3">
-                      <label className="text-xs font-medium text-foreground">
-                        Usuários {filterUsers.length > 0 && `(${filterUsers.length})`}
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-foreground">
+                          Usuários {filterUsers.length > 0 && `(${filterUsers.length})`}
+                        </label>
+                        {filterUsers.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs cursor-pointer text-green-600 hover:text-green-700"
+                            onClick={() => setFilterUsers([])}
+                          >
+                            Limpar
+                          </Button>
+                        )}
+                      </div>
                       <ScrollArea className="h-32">
                         <div className="space-y-2 pr-2">
                           {allUsers.map((user) => (
@@ -623,65 +661,66 @@ export function ConversationListNew({
 
           {/* Active Filters Badges */}
           {hasFilters && (
-            <div className="flex flex-wrap gap-2 px-3 py-2 border-t">
-              {filterStatus !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="h-6 text-xs gap-1 pr-1 flex items-center"
-                >
-                  Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
-                  <button
-                    onClick={() => setFilterStatus("all")}
-                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              
-              {filterTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="h-6 text-xs gap-1 pr-1 flex items-center"
-                >
-                  {tag}
-                  <button
-                    onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
-                    className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-              
-              {filterUsers.map((userId) => {
-                const user = allUsers.find((u) => u.id === userId);
-                return user ? (
-                  <Badge
-                    key={userId}
-                    variant="secondary"
-                    className="h-6 text-xs gap-1 pr-1 flex items-center"
-                  >
-                    {user.name}
-                    <button
-                      onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
-                      className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+            <div className="border-t bg-slate-50">
+              <div className="flex items-center justify-between px-3 py-2">
+                <div className="flex flex-wrap gap-2 flex-1">
+                  {filterStatus !== "all" && (
+                    <Badge
+                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-300"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ) : null;
-              })}
+                      Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
+                      <button
+                        onClick={() => setFilterStatus("all")}
+                        className="ml-1 hover:bg-blue-300 rounded-sm p-0.5 cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  
+                  {filterTags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-300"
+                    >
+                      {tag}
+                      <button
+                        onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
+                        className="ml-1 hover:bg-purple-300 rounded-sm p-0.5 cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                  
+                  {filterUsers.map((userId) => {
+                    const user = allUsers.find((u) => u.id === userId);
+                    return user ? (
+                      <Badge
+                        key={userId}
+                        className="h-6 text-xs gap-1 pr-1 flex items-center bg-green-100 text-green-800 hover:bg-green-200 border-green-300"
+                      >
+                        {user.name}
+                        <button
+                          onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
+                          className="ml-1 hover:bg-green-300 rounded-sm p-0.5 cursor-pointer"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs cursor-pointer"
-                onClick={clearFilters}
-              >
-                Limpar tudo
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs cursor-pointer ml-2 flex-shrink-0 bg-white hover:bg-slate-100 border-slate-300"
+                  onClick={clearFilters}
+                >
+                  Limpar tudo
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -757,7 +796,7 @@ function ConversationCard({
             {/* Avatar com Canal */}
             <div className="relative flex-shrink-0">
               <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-blue-500 text-white font-medium text-sm">
+                <AvatarFallback className="bg-slate-500 text-white font-medium text-sm">
                   {conversation.avatar}
                 </AvatarFallback>
               </Avatar>
