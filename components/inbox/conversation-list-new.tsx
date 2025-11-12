@@ -293,9 +293,9 @@ export function ConversationListNew({
 
   return (
     <TooltipProvider>
-      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-md h-full">
+      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 rounded-2xl shadow-md h-full">
         {/* Header com Abas */}
-        <div className="p-4 space-y-3 flex-shrink-0">
+        <div className="p-4 space-y-3 flex-shrink-0 relative z-10">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">{tabTitles[activeTab]}</h2>
             <div className="flex items-center gap-1">
@@ -447,7 +447,7 @@ export function ConversationListNew({
                   <TooltipContent>Filtros</TooltipContent>
                 </Tooltip>
                 <PopoverContent 
-                  className="w-[280px] p-0 z-[100]" 
+                  className="w-[280px] p-0 z-[9999]" 
                   align="end"
                   side="bottom"
                   sideOffset={8}
@@ -820,7 +820,7 @@ export function ConversationListNew({
         </div>
 
         {/* Lista de Conversas */}
-        <ScrollArea className="flex-1 overflow-auto">
+        <ScrollArea className="flex-1 overflow-auto rounded-b-2xl">
           <div className="space-y-0 min-h-full">
             {sortedConversations.map((conversation) => (
               <ConversationCard
