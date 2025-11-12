@@ -128,6 +128,7 @@ export function ConversationListNew({
   );
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterUnreadOnly, setFilterUnreadOnly] = useState<boolean>(false);
+  const [filterImportantOnly, setFilterImportantOnly] = useState<boolean>(false);
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
@@ -146,6 +147,9 @@ export function ConversationListNew({
   const myCount = conversations.filter(
     (c) => c.assignedTo?.id === "user1" && c.status === "open"
   ).length;
+  const unreadCount = conversations.filter(
+    (c) => c.unread && c.status === "open"
+  ).length;
   const unassignedCount = conversations.filter(
     (c) => !c.assignedTo && c.status === "open"
   ).length;
@@ -155,6 +159,7 @@ export function ConversationListNew({
     // Filtro de aba
     if (activeTab === "all" && conv.status !== "open") return false;
     if (activeTab === "my" && (conv.assignedTo?.id !== "user1" || conv.status !== "open")) return false;
+    if (activeTab === "unread" && (!conv.unread || conv.status !== "open")) return false;
     if (activeTab === "unassigned" && (conv.assignedTo || conv.status !== "open")) return false;
     if (activeTab === "groups") return false; // TODO: adicionar lógica de grupos
 
@@ -175,6 +180,11 @@ export function ConversationListNew({
     // Filtro de não lidas
     if (filterUnreadOnly) {
       if (!conv.unread) return false;
+    }
+
+    // Filtro de importantes
+    if (filterImportantOnly) {
+      if (!conv.isImportant) return false;
     }
 
     // Filtro de tags (multiselect)
@@ -221,12 +231,13 @@ export function ConversationListNew({
   const clearFilters = () => {
     setFilterStatus("all");
     setFilterUnreadOnly(false);
+    setFilterImportantOnly(false);
     setFilterTags([]);
     setFilterUsers([]);
   };
 
   const hasFilters =
-    filterStatus !== "all" || filterUnreadOnly || filterTags.length > 0 || filterUsers.length > 0;
+    filterStatus !== "all" || filterUnreadOnly || filterImportantOnly || filterTags.length > 0 || filterUsers.length > 0;
 
   const handleSaveNewConversation = () => {
     // Criar nova conversa
@@ -275,6 +286,7 @@ export function ConversationListNew({
   const tabTitles: Record<string, string> = {
     all: "Todos os chats",
     my: "Meus chats",
+    unread: "Não lidas",
     unassigned: "Chats não atribuídos",
     groups: "Grupos",
   };
@@ -419,22 +431,6 @@ export function ConversationListNew({
                 <TooltipContent>Selecionar conversas</TooltipContent>
               </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={filterUnreadOnly ? "default" : "ghost"}
-                    size="icon"
-                    className="h-8 w-8 cursor-pointer"
-                    onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
-                  >
-                    <MailOpen className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {filterUnreadOnly ? "Mostrar todas" : "Apenas não lidas"}
-                </TooltipContent>
-              </Tooltip>
-
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -466,6 +462,33 @@ export function ConversationListNew({
                           </Button>
                         )}
                       </div>
+                    </div>
+
+                    {/* Quick Filters Pills */}
+                    <div className="flex flex-wrap gap-2 pb-3 mb-3 border-b">
+                      <Badge
+                        onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
+                        className={`h-7 px-3 text-xs cursor-pointer transition-colors ${
+                          filterUnreadOnly
+                            ? "bg-blue-500 text-white hover:bg-blue-600"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <MailOpen className="h-3 w-3 mr-1.5" />
+                        Não lidas
+                      </Badge>
+                      
+                      <Badge
+                        onClick={() => setFilterImportantOnly(!filterImportantOnly)}
+                        className={`h-7 px-3 text-xs cursor-pointer transition-colors ${
+                          filterImportantOnly
+                            ? "bg-amber-500 text-white hover:bg-amber-600"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <Star className="h-3 w-3 mr-1.5" />
+                        Importantes
+                      </Badge>
                     </div>
 
                     {/* Status Filter */}
@@ -716,6 +739,21 @@ export function ConversationListNew({
                       Não lidas
                       <button
                         onClick={() => setFilterUnreadOnly(false)}
+                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+
+                  {filterImportantOnly && (
+                    <Badge
+                      variant="secondary"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center"
+                    >
+                      Importantes
+                      <button
+                        onClick={() => setFilterImportantOnly(false)}
                         className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
