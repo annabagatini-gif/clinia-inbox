@@ -127,6 +127,7 @@ export function ConversationListNew({
     []
   );
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterUnreadOnly, setFilterUnreadOnly] = useState<boolean>(false);
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
@@ -145,9 +146,6 @@ export function ConversationListNew({
   const myCount = conversations.filter(
     (c) => c.assignedTo?.id === "user1" && c.status === "open"
   ).length;
-  const unreadCount = conversations.filter(
-    (c) => c.unread && c.status === "open"
-  ).length;
   const unassignedCount = conversations.filter(
     (c) => !c.assignedTo && c.status === "open"
   ).length;
@@ -157,7 +155,6 @@ export function ConversationListNew({
     // Filtro de aba
     if (activeTab === "all" && conv.status !== "open") return false;
     if (activeTab === "my" && (conv.assignedTo?.id !== "user1" || conv.status !== "open")) return false;
-    if (activeTab === "unread" && (!conv.unread || conv.status !== "open")) return false;
     if (activeTab === "unassigned" && (conv.assignedTo || conv.status !== "open")) return false;
     if (activeTab === "groups") return false; // TODO: adicionar lógica de grupos
 
@@ -173,6 +170,11 @@ export function ConversationListNew({
     // Filtro de status (multiselect)
     if (filterStatus !== "all") {
       if (conv.status !== filterStatus) return false;
+    }
+
+    // Filtro de não lidas
+    if (filterUnreadOnly) {
+      if (!conv.unread) return false;
     }
 
     // Filtro de tags (multiselect)
@@ -218,12 +220,13 @@ export function ConversationListNew({
 
   const clearFilters = () => {
     setFilterStatus("all");
+    setFilterUnreadOnly(false);
     setFilterTags([]);
     setFilterUsers([]);
   };
 
   const hasFilters =
-    filterStatus !== "all" || filterTags.length > 0 || filterUsers.length > 0;
+    filterStatus !== "all" || filterUnreadOnly || filterTags.length > 0 || filterUsers.length > 0;
 
   const handleSaveNewConversation = () => {
     // Criar nova conversa
@@ -272,7 +275,6 @@ export function ConversationListNew({
   const tabTitles: Record<string, string> = {
     all: "Todos os chats",
     my: "Meus chats",
-    unread: "Não lidas",
     unassigned: "Chats não atribuídos",
     groups: "Grupos",
   };
@@ -415,6 +417,22 @@ export function ConversationListNew({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Selecionar conversas</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={filterUnreadOnly ? "default" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8 cursor-pointer"
+                    onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
+                  >
+                    <MailOpen className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {filterUnreadOnly ? "Mostrar todas" : "Apenas não lidas"}
+                </TooltipContent>
               </Tooltip>
 
               <Popover>
@@ -683,6 +701,21 @@ export function ConversationListNew({
                       Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
                       <button
                         onClick={() => setFilterStatus("all")}
+                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+
+                  {filterUnreadOnly && (
+                    <Badge
+                      variant="secondary"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center"
+                    >
+                      Não lidas
+                      <button
+                        onClick={() => setFilterUnreadOnly(false)}
                         className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare, Bot, Workflow, MailOpen } from "lucide-react";
+import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare, Bot, Workflow } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -188,29 +188,6 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
               </span>
             ) : (
               <span className="text-xs text-gray-500">8</span>
-            )}
-          </Button>
-
-          <Button
-            variant="ghost"
-            onClick={() => onTabChange("unread")}
-            className={cn(
-              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
-              activeTab === "unread"
-                ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
-                : "text-gray-700 font-normal hover:bg-gray-200"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <MailOpen className="h-5 w-5" />
-              Não lidas
-            </div>
-            {activeTab === "unread" ? (
-              <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                5
-              </span>
-            ) : (
-              <span className="text-xs text-gray-500">5</span>
             )}
           </Button>
 
