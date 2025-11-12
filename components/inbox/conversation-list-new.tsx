@@ -447,12 +447,14 @@ export function ConversationListNew({
                   <TooltipContent>Filtros</TooltipContent>
                 </Tooltip>
                 <PopoverContent 
-                  className="w-[280px] p-0" 
+                  className="w-[280px] p-0 z-[100]" 
                   align="end"
                   side="bottom"
                   sideOffset={8}
+                  avoidCollisions={true}
+                  collisionPadding={8}
                 >
-                  <ScrollArea className="max-h-[calc(100vh-200px)]">
+                  <ScrollArea className="max-h-[70vh]">
                   <div className="p-3">
                     <div className="flex items-center justify-between mb-3 min-h-[28px]">
                       <h4 className="font-semibold text-sm">Filtros</h4>
