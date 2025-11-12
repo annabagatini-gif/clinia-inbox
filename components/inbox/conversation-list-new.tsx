@@ -666,12 +666,13 @@ export function ConversationListNew({
                 <div className="flex flex-wrap gap-2 flex-1">
                   {filterStatus !== "all" && (
                     <Badge
-                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-300"
+                      variant="secondary"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center"
                     >
                       Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
                       <button
                         onClick={() => setFilterStatus("all")}
-                        className="ml-1 hover:bg-blue-300 rounded-sm p-0.5 cursor-pointer"
+                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -681,12 +682,13 @@ export function ConversationListNew({
                   {filterTags.map((tag) => (
                     <Badge
                       key={tag}
-                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-300"
+                      variant="secondary"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center"
                     >
                       {tag}
                       <button
                         onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
-                        className="ml-1 hover:bg-purple-300 rounded-sm p-0.5 cursor-pointer"
+                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -698,12 +700,13 @@ export function ConversationListNew({
                     return user ? (
                       <Badge
                         key={userId}
-                        className="h-6 text-xs gap-1 pr-1 flex items-center bg-green-100 text-green-800 hover:bg-green-200 border-green-300"
+                        variant="secondary"
+                        className="h-6 text-xs gap-1 pr-1 flex items-center"
                       >
                         {user.name}
                         <button
                           onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
-                          className="ml-1 hover:bg-green-300 rounded-sm p-0.5 cursor-pointer"
+                          className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
                         >
                           <X className="h-3 w-3" />
                         </button>
