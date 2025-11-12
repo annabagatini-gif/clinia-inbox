@@ -293,9 +293,9 @@ export function ConversationListNew({
 
   return (
     <TooltipProvider>
-      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 rounded-2xl shadow-md h-full">
+      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 rounded-2xl shadow-md h-full overflow-hidden">
         {/* Header com Abas */}
-        <div className="p-4 space-y-3 flex-shrink-0 relative z-10">
+        <div className="p-4 space-y-3 flex-shrink-0 relative z-50">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">{tabTitles[activeTab]}</h2>
             <div className="flex items-center gap-1">
