@@ -15,14 +15,14 @@ export default function Home() {
   );
 
   return (
-    <div className="flex h-screen bg-[#F1F3F4] p-2 gap-2">
+    <div className="flex h-screen overflow-hidden bg-[#F1F3F4] p-2 gap-2">
       {/* Sidebar - oculta em mobile */}
-      <div className="hidden lg:flex overflow-hidden">
+      <div className="hidden lg:flex">
         <InboxSidebar activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
       
       {/* Lista de conversas - oculta quando conversa está selecionada em mobile */}
-      <div className={`${selectedConversationId ? 'hidden md:block' : 'block'} overflow-visible`}>
+      <div className={`${selectedConversationId ? 'hidden md:block' : 'block'}`}>
         <ConversationListNew
           selectedId={selectedConversationId}
           onSelect={setSelectedConversationId}
@@ -31,7 +31,7 @@ export default function Home() {
       </div>
       
       {/* Chat - oculta quando nenhuma conversa está selecionada em mobile */}
-      <div className={`flex-1 overflow-hidden ${selectedConversationId ? 'block' : 'hidden md:block'}`}>
+      <div className={`flex-1 ${selectedConversationId ? 'block' : 'hidden md:block'}`}>
         <ChatArea
           conversationId={selectedConversationId}
           conversationName={selectedConversation?.name}

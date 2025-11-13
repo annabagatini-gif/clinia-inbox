@@ -1,0 +1,78 @@
+[1mdiff --git a/components/inbox/conversation-list-new.tsx b/components/inbox/conversation-list-new.tsx[m
+[1mindex 9252b58..f15f0b6 100644[m
+[1m--- a/components/inbox/conversation-list-new.tsx[m
+[1m+++ b/components/inbox/conversation-list-new.tsx[m
+[36m@@ -293,9 +293,9 @@[m [mexport function ConversationListNew({[m
+ [m
+   return ([m
+     <TooltipProvider>[m
+[31m-      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-md h-full">[m
+[32m+[m[32m      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 rounded-2xl shadow-md h-full overflow-hidden">[m
+         {/* Header com Abas */}[m
+[31m-        <div className="p-4 space-y-3 flex-shrink-0">[m
+[32m+[m[32m        <div className="p-4 space-y-3 flex-shrink-0 relative z-50">[m
+           <div className="flex items-center justify-between">[m
+             <h2 className="font-semibold text-lg">{tabTitles[activeTab]}</h2>[m
+             <div className="flex items-center gap-1">[m
+[36m@@ -446,7 +446,15 @@[m [mexport function ConversationListNew({[m
+                   </TooltipTrigger>[m
+                   <TooltipContent>Filtros</TooltipContent>[m
+                 </Tooltip>[m
+[31m-                <PopoverContent className="w-[280px] p-0" align="end">[m
+[32m+[m[32m                <PopoverContent[m[41m [m
+[32m+[m[32m                  className="w-[280px] p-0 z-[9999]"[m[41m [m
+[32m+[m[32m                  align="end"[m
+[32m+[m[32m                  side="bottom"[m
+[32m+[m[32m                  sideOffset={8}[m
+[32m+[m[32m                  avoidCollisions={true}[m
+[32m+[m[32m                  collisionPadding={8}[m
+[32m+[m[32m                >[m
+[32m+[m[32m                  <ScrollArea className="max-h-[70vh]">[m
+                   <div className="p-3">[m
+                     <div className="flex items-center justify-between mb-3 min-h-[28px]">[m
+                       <h4 className="font-semibold text-sm">Filtros</h4>[m
+[36m@@ -468,10 +476,10 @@[m [mexport function ConversationListNew({[m
+                     <div className="flex flex-wrap gap-2 pb-3 mb-3 border-b">[m
+                       <Badge[m
+                         onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}[m
+[31m-                        className={`h-7 px-3 text-xs cursor-pointer transition-colors ${[m
+[32m+[m[32m                        className={`h-7 px-3 text-xs cursor-pointer transition-all ${[m
+                           filterUnreadOnly[m
+[31m-                            ? "bg-blue-500 text-white hover:bg-blue-600"[m
+[31m-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"[m
+[32m+[m[32m                            ? "bg-slate-200 text-slate-900 hover:bg-slate-300 border border-slate-400"[m
+[32m+[m[32m                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-transparent"[m
+                         }`}[m
+                       >[m
+                         <MailOpen className="h-3 w-3 mr-1.5" />[m
+[36m@@ -480,10 +488,10 @@[m [mexport function ConversationListNew({[m
+                       [m
+                       <Badge[m
+                         onClick={() => setFilterImportantOnly(!filterImportantOnly)}[m
+[31m-                        className={`h-7 px-3 text-xs cursor-pointer transition-colors ${[m
+[32m+[m[32m                        className={`h-7 px-3 text-xs cursor-pointer transition-all ${[m
+                           filterImportantOnly[m
+[31m-                            ? "bg-amber-500 text-white hover:bg-amber-600"[m
+[31m-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"[m
+[32m+[m[32m                            ? "bg-slate-200 text-slate-900 hover:bg-slate-300 border border-slate-400"[m
+[32m+[m[32m                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-transparent"[m
+                         }`}[m
+                       >[m
+                         <Star className="h-3 w-3 mr-1.5" />[m
+[36m@@ -617,6 +625,7 @@[m [mexport function ConversationListNew({[m
+                       </ScrollArea>[m
+                     </div>[m
+                   </div>[m
+[32m+[m[32m                  </ScrollArea>[m
+                 </PopoverContent>[m
+               </Popover>[m
+ [m
+[36m@@ -811,7 +820,7 @@[m [mexport function ConversationListNew({[m
+         </div>[m
+ [m
+         {/* Lista de Conversas */}[m
+[31m-        <ScrollArea className="flex-1 overflow-auto">[m
+[32m+[m[32m        <ScrollArea className="flex-1 overflow-auto rounded-b-2xl">[m
+           <div className="space-y-0 min-h-full">[m
+             {sortedConversations.map((conversation) => ([m
+               <ConversationCard[m
