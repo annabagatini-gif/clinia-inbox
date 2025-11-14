@@ -119,4 +119,27 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Cursor pointer para elementos clicáveis */
+  button,
+  a,
+  [role="button"],
+  [role="menuitem"],
+  [role="option"],
+  input[type="checkbox"],
+  input[type="radio"],
+  label[for],
+  [onclick],
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  
+  /* Badges e avatares não são clicáveis, então não devem ter cursor pointer */
+  [data-slot="badge"]:not(.cursor-pointer),
+  [data-slot="avatar"],
+  [data-slot="avatar-image"],
+  [data-slot="avatar-fallback"],
+  .cursor-default {
+    cursor: default !important;
+  }
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare, Bot, Workflow } from "lucide-react";
+import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare, Bot, Workflow, Bell } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -12,6 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface InboxSidebarProps {
@@ -26,6 +35,9 @@ interface InboxSidebarProps {
 }
 
 export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarProps) {
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notificationPreference, setNotificationPreference] = useState<"all" | "assigned" | "none">("all");
+  
   // Valores padrão caso counts não seja fornecido
   const allCount = counts?.all ?? 13;
   const myCount = counts?.my ?? 8;
@@ -150,9 +162,79 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
           <div className="flex items-center justify-between px-2 pb-3 pt-2">
             <h3 className="text-base font-semibold text-gray-900">Caixa de Entrada</h3>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-gray-200 cursor-pointer">
-                <Search className="h-4 w-4 text-gray-600" />
-              </Button>
+              <Dialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-gray-200 cursor-pointer">
+                          <Bell className="h-4 w-4 text-gray-600" />
+                        </Button>
+                      </DialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Configurações de notificações
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Configurações de notificações</DialogTitle>
+                    <DialogDescription>
+                      Escolha quais notificações você deseja receber
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4 space-y-3">
+                    <Button
+                      variant={notificationPreference === "all" ? "default" : "outline"}
+                      className="w-full justify-start h-auto py-3 px-4"
+                      onClick={() => {
+                        setNotificationPreference("all");
+                        setTimeout(() => setIsNotificationsOpen(false), 300);
+                      }}
+                    >
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="font-medium">Todas as notificações</span>
+                        <span className="text-xs text-muted-foreground font-normal">
+                          Receba notificações de todas as conversas
+                        </span>
+                      </div>
+                    </Button>
+                    
+                    <Button
+                      variant={notificationPreference === "assigned" ? "default" : "outline"}
+                      className="w-full justify-start h-auto py-3 px-4"
+                      onClick={() => {
+                        setNotificationPreference("assigned");
+                        setTimeout(() => setIsNotificationsOpen(false), 300);
+                      }}
+                    >
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="font-medium">Apenas conversas atribuídas a mim</span>
+                        <span className="text-xs text-muted-foreground font-normal">
+                          Receba notificações apenas das conversas que você está atendendo
+                        </span>
+                      </div>
+                    </Button>
+                    
+                    <Button
+                      variant={notificationPreference === "none" ? "default" : "outline"}
+                      className="w-full justify-start h-auto py-3 px-4"
+                      onClick={() => {
+                        setNotificationPreference("none");
+                        setTimeout(() => setIsNotificationsOpen(false), 300);
+                      }}
+                    >
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="font-medium">Nenhuma notificação</span>
+                        <span className="text-xs text-muted-foreground font-normal">
+                          Não receba notificações
+                        </span>
+                      </div>
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 

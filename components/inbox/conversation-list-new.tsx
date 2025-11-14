@@ -279,6 +279,24 @@ export function ConversationListNew({
     }
   };
 
+  const handleToggleUnread = (id: string) => {
+    setConversations(conversations.map(conv => {
+      if (conv.id === id) {
+        return { ...conv, unread: !conv.unread };
+      }
+      return conv;
+    }));
+  };
+
+  const handleToggleImportant = (id: string) => {
+    setConversations(conversations.map(conv => {
+      if (conv.id === id) {
+        return { ...conv, isImportant: !conv.isImportant };
+      }
+      return conv;
+    }));
+  };
+
   const clearFilters = () => {
     setFilterStatus("all");
     setFilterUnreadOnly(false);
@@ -1147,6 +1165,8 @@ export function ConversationListNew({
                 isChecked={selectedConversations.includes(conversation.id)}
                 onSelect={onSelect}
                 onCheck={handleSelectConversation}
+                onToggleUnread={handleToggleUnread}
+                onToggleImportant={handleToggleImportant}
                 selectionMode={selectionMode}
               />
             ))}
@@ -1170,6 +1190,8 @@ function ConversationCard({
   isChecked,
   onSelect,
   onCheck,
+  onToggleUnread,
+  onToggleImportant,
   selectionMode,
 }: {
   conversation: Conversation;
@@ -1177,8 +1199,12 @@ function ConversationCard({
   isChecked: boolean;
   onSelect: (id: string) => void;
   onCheck: (id: string) => void;
+  onToggleUnread: (id: string) => void;
+  onToggleImportant: (id: string) => void;
   selectionMode: boolean;
 }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div
       className={`group relative py-3 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
@@ -1199,7 +1225,13 @@ function ConversationCard({
       {/* Main Content */}
       <div
         className="flex-1 min-w-0 overflow-hidden"
-        onClick={() => onSelect(conversation.id)}
+        onClick={() => {
+          onSelect(conversation.id);
+          // Marca como lida se ainda não estiver lida
+          if (conversation.unread) {
+            onToggleUnread(conversation.id);
+          }
+        }}
       >
         {/* Header Row */}
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -1274,7 +1306,7 @@ function ConversationCard({
                         <TooltipTrigger>
                           <Badge
                             variant="outline"
-                            className={`text-xs h-5 px-1.5 ${
+                            className={`text-xs h-5 px-1.5 cursor-default ${
                               tagColors[tag] || "bg-gray-100 text-gray-800 border-gray-200"
                             }`}
                           >
@@ -1299,18 +1331,25 @@ function ConversationCard({
             </div>
 
             {/* Kebab Menu */}
-            <DropdownMenu>
+            <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen} modal={false}>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className={`h-6 w-6 transition-opacity ${
+                    isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}
                 >
                   <MoreVertical className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-[200px]">
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    onToggleUnread(conversation.id);
+                  }}
+                >
                   {conversation.unread ? (
                     <>
                       <MailOpen className="h-4 w-4 mr-2" />
@@ -1323,7 +1362,12 @@ function ConversationCard({
                     </>
                   )}
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    onToggleImportant(conversation.id);
+                  }}
+                >
                   <Star className="h-4 w-4 mr-2" />
                   {conversation.isImportant
                     ? "Remover importante"
@@ -1359,12 +1403,12 @@ function ConversationCard({
 
           <div className="flex items-center gap-2 flex-shrink-0">
             {conversation.unreadCount > 0 && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={1000}>
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <Badge
                       variant="default"
-                      className="rounded-full h-5 min-w-5 px-1.5 text-xs flex items-center justify-center"
+                      className="rounded-full h-5 min-w-5 px-1.5 text-xs flex items-center justify-center cursor-default"
                     >
                       {conversation.unreadCount}
                     </Badge>
@@ -1377,10 +1421,10 @@ function ConversationCard({
             )}
 
             {conversation.assignedTo && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={1000}>
                 <Tooltip>
-                  <TooltipTrigger>
-                    <Avatar className="h-5 w-5 flex-shrink-0">
+                  <TooltipTrigger asChild>
+                    <Avatar className="h-5 w-5 flex-shrink-0 cursor-default">
                       <AvatarFallback className="bg-slate-200 text-slate-700 text-xs flex items-center justify-center">
                         {conversation.assignedTo.avatar}
                       </AvatarFallback>
