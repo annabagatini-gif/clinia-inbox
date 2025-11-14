@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -20,6 +20,9 @@ import {
   MessageCircle,
   Camera,
   X,
+  Tag,
+  UserPlus,
+  CircleDot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,11 +67,18 @@ import {
 import { Label } from "@/components/ui/label";
 import { mockConversations } from "@/lib/mock-data";
 import { Conversation } from "@/types/inbox";
+import { toast } from "sonner";
 
 interface ConversationListProps {
   selectedId?: string;
   onSelect: (id: string) => void;
   activeTab: string;
+  onCountsChange?: (counts: {
+    all: number;
+    my: number;
+    unread: number;
+    unassigned: number;
+  }) => void;
 }
 
 // Mapa de cores para as tags
@@ -121,6 +131,7 @@ export function ConversationListNew({
   selectedId,
   onSelect,
   activeTab,
+  onCountsChange,
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedConversations, setSelectedConversations] = useState<string[]>(
@@ -133,6 +144,13 @@ export function ConversationListNew({
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [isAssignTagOpen, setIsAssignTagOpen] = useState(false);
+  const [selectedTagsToAssign, setSelectedTagsToAssign] = useState<string[]>([]);
+  const [isAssignUserOpen, setIsAssignUserOpen] = useState(false);
+  const [selectedUserToAssign, setSelectedUserToAssign] = useState<string | null>(null);
+  const [isChangeStatusOpen, setIsChangeStatusOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("open");
+  const [showKebabTooltip, setShowKebabTooltip] = useState(false);
   
   // Estados para modal de nova conversa
   const [isNewConversationOpen, setIsNewConversationOpen] = useState(false);
@@ -153,6 +171,39 @@ export function ConversationListNew({
   const unassignedCount = conversations.filter(
     (c) => !c.assignedTo && c.status === "open"
   ).length;
+
+  // Atualiza contadores no componente pai
+  useEffect(() => {
+    if (onCountsChange) {
+      onCountsChange({
+        all: allCount,
+        my: myCount,
+        unread: unreadCount,
+        unassigned: unassignedCount,
+      });
+    }
+  }, [allCount, myCount, unreadCount, unassignedCount, onCountsChange]);
+
+  // Mostra tooltip automaticamente quando conversas são selecionadas
+  useEffect(() => {
+    if (selectedConversations.length > 0 || selectionMode) {
+      // Pequeno delay para garantir que o componente foi renderizado
+      const showTimer = setTimeout(() => {
+        setShowKebabTooltip(true);
+      }, 100);
+      
+      const hideTimer = setTimeout(() => {
+        setShowKebabTooltip(false);
+      }, 2600); // 2.5 segundos após aparecer
+      
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
+    } else {
+      setShowKebabTooltip(false);
+    }
+  }, [selectedConversations.length, selectionMode]);
 
   // Filtra conversas
   const filteredConversations = conversations.filter((conv) => {
@@ -236,8 +287,83 @@ export function ConversationListNew({
     setFilterUsers([]);
   };
 
+  const handleAssignTags = () => {
+    // Aplicar etiquetas selecionadas às conversas selecionadas
+    setConversations(conversations.map(conv => {
+      if (selectedConversations.includes(conv.id)) {
+        // Adicionar etiquetas que ainda não existem
+        const newTags = [...new Set([...conv.tags, ...selectedTagsToAssign])];
+        return { ...conv, tags: newTags };
+      }
+      return conv;
+    }));
+    // Limpar seleção e fechar popover
+    setSelectedTagsToAssign([]);
+    setIsAssignTagOpen(false);
+  };
+
+  const handleAssignUser = () => {
+    if (!selectedUserToAssign) return;
+    
+    const user = allUsers.find(u => u.id === selectedUserToAssign);
+    if (!user) return;
+
+    // Aplicar usuário selecionado às conversas selecionadas
+    setConversations(conversations.map(conv => {
+      if (selectedConversations.includes(conv.id)) {
+        return { 
+          ...conv, 
+          assignedTo: {
+            id: user.id,
+            name: user.name,
+            avatar: user.avatar,
+          }
+        };
+      }
+      return conv;
+    }));
+    // Limpar seleção e fechar dialog
+    setSelectedUserToAssign(null);
+    setIsAssignUserOpen(false);
+  };
+
+  const handleChangeStatus = () => {
+    // Aplicar status selecionado às conversas selecionadas
+    setConversations(conversations.map(conv => {
+      if (selectedConversations.includes(conv.id)) {
+        return { 
+          ...conv, 
+          status: selectedStatus as "open" | "closed" | "blocked"
+        };
+      }
+      return conv;
+    }));
+    // Resetar e fechar dialog
+    setSelectedStatus("open");
+    setIsChangeStatusOpen(false);
+  };
+
+  const handleExport = () => {
+    // Simular exportação
+    const count = selectedConversations.length;
+    
+    toast.success(`${count} ${count === 1 ? 'conversa exportada' : 'conversas exportadas'} com sucesso`, {
+      duration: 5000,
+    });
+  };
+
   const hasFilters =
     filterStatus !== "all" || filterUnreadOnly || filterImportantOnly || filterTags.length > 0 || filterUsers.length > 0;
+
+  const handleExportFiltered = () => {
+    // Exportar conversas filtradas
+    const count = filteredConversations.length;
+    const filterText = hasFilters ? ' (filtradas)' : '';
+    
+    toast.success(`${count} ${count === 1 ? 'conversa' : 'conversas'}${filterText} exportada${count === 1 ? '' : 's'} com sucesso`, {
+      duration: 5000,
+    });
+  };
 
   const handleSaveNewConversation = () => {
     // Criar nova conversa
@@ -293,7 +419,7 @@ export function ConversationListNew({
 
   return (
     <TooltipProvider>
-      <div className="w-[420px] bg-white flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-lg h-full">
+      <div className="w-[440px] bg-white flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-lg h-full">
         {/* Header com Abas */}
         <div className="p-4 space-y-3 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -596,37 +722,266 @@ export function ConversationListNew({
                 </PopoverContent>
               </Popover>
 
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 cursor-pointer"
+                onClick={handleExportFiltered}
+                title={hasFilters ? 'Exportar conversas filtradas' : 'Exportar todas as conversas'}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+
               {selectedConversations.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Check className="h-4 w-4 mr-2" />
-                      Marcar como lida
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Star className="h-4 w-4 mr-2" />
-                      Marcar como importante
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <CheckCheck className="h-4 w-4 mr-2" />
-                      Atribuir
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Download className="h-4 w-4 mr-2" />
-                      Exportar
-                    </DropdownMenuItem>
+                <TooltipProvider>
+                  <Tooltip open={showKebabTooltip}>
+                    <TooltipTrigger asChild>
+                      <div className="inline-block">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuItem onSelect={(e) => {
+                            e.preventDefault();
+                            setIsAssignTagOpen(true);
+                          }}>
+                            <Tag className="h-4 w-4 mr-2" />
+                            Atribuir etiqueta
+                          </DropdownMenuItem>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Atribuir etiquetas às conversas selecionadas</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuItem onSelect={(e) => {
+                            e.preventDefault();
+                            setIsAssignUserOpen(true);
+                          }}>
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Atribuir usuário
+                          </DropdownMenuItem>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Atribuir usuário às conversas selecionadas</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuItem onSelect={(e) => {
+                            e.preventDefault();
+                            setIsChangeStatusOpen(true);
+                          }}>
+                            <CircleDot className="h-4 w-4 mr-2" />
+                            Alterar status da conversa
+                          </DropdownMenuItem>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Alterar o status das conversas selecionadas</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Remover
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuItem onSelect={handleExport}>
+                            <Download className="h-4 w-4 mr-2" />
+                            Exportar
+                          </DropdownMenuItem>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Exportar conversas selecionadas</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuItem className="text-destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remover
+                          </DropdownMenuItem>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Remover conversas selecionadas</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Clique para ver ações disponíveis</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {/* Dialog para atribuir etiquetas */}
+              {selectedConversations.length > 0 && (
+                <Dialog open={isAssignTagOpen} onOpenChange={setIsAssignTagOpen}>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                      <DialogTitle>Atribuir etiquetas</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <ScrollArea className="h-64 border rounded-md">
+                        <div className="space-y-2 p-2">
+                          {allTags.map((tag) => (
+                            <div key={tag} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`assign-tag-${tag}`}
+                                checked={selectedTagsToAssign.includes(tag)}
+                                onCheckedChange={() => {
+                                  if (selectedTagsToAssign.includes(tag)) {
+                                    setSelectedTagsToAssign(selectedTagsToAssign.filter((t) => t !== tag));
+                                  } else {
+                                    setSelectedTagsToAssign([...selectedTagsToAssign, tag]);
+                                  }
+                                }}
+                                className="cursor-pointer"
+                              />
+                              <label
+                                htmlFor={`assign-tag-${tag}`}
+                                className="text-sm cursor-pointer leading-none"
+                              >
+                                {tag}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedTagsToAssign([]);
+                          setIsAssignTagOpen(false);
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleAssignTags}
+                        disabled={selectedTagsToAssign.length === 0}
+                      >
+                        Aplicar ({selectedTagsToAssign.length})
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+
+              {/* Dialog para atribuir usuário */}
+              {selectedConversations.length > 0 && (
+                <Dialog open={isAssignUserOpen} onOpenChange={setIsAssignUserOpen}>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                      <DialogTitle>Atribuir usuário</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <ScrollArea className="h-64 border rounded-md">
+                        <div className="space-y-2 p-2">
+                          {allUsers.map((user) => (
+                            <div key={user.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`assign-user-${user.id}`}
+                                checked={selectedUserToAssign === user.id}
+                                onCheckedChange={() => {
+                                  setSelectedUserToAssign(selectedUserToAssign === user.id ? null : user.id);
+                                }}
+                                className="cursor-pointer"
+                              />
+                              <label
+                                htmlFor={`assign-user-${user.id}`}
+                                className="text-sm cursor-pointer leading-none flex items-center gap-2"
+                              >
+                                <Avatar className="h-6 w-6">
+                                  <AvatarFallback className="bg-slate-200 text-slate-700 text-xs">
+                                    {user.avatar}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {user.name}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedUserToAssign(null);
+                          setIsAssignUserOpen(false);
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleAssignUser}
+                        disabled={!selectedUserToAssign}
+                      >
+                        Aplicar
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+
+              {/* Dialog para alterar status */}
+              {selectedConversations.length > 0 && (
+                <Dialog open={isChangeStatusOpen} onOpenChange={setIsChangeStatusOpen}>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                      <DialogTitle>Alterar status da conversa</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Status</label>
+                        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione um status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="open">Aberta</SelectItem>
+                            <SelectItem value="closed">Fechada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedStatus("open");
+                          setIsChangeStatusOpen(false);
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleChangeStatus}
+                      >
+                        Aplicar
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
           </div>
@@ -826,8 +1181,8 @@ function ConversationCard({
 }) {
   return (
     <div
-      className={`group relative py-3 pr-4 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
-        selectionMode ? 'pl-2' : 'pl-3'
+      className={`group relative py-3 flex items-start gap-3 hover:bg-muted/50 transition-colors border-b cursor-pointer ${
+        selectionMode ? 'pl-5 pr-12' : 'pl-3 pr-4'
       } ${isSelected ? "bg-muted" : ""}`}
     >
       {/* Checkbox - só aparece no modo seleção */}
@@ -1009,7 +1364,7 @@ function ConversationCard({
                   <TooltipTrigger>
                     <Badge
                       variant="default"
-                      className="rounded-full h-5 min-w-5 px-1.5 text-xs"
+                      className="rounded-full h-5 min-w-5 px-1.5 text-xs flex items-center justify-center"
                     >
                       {conversation.unreadCount}
                     </Badge>
@@ -1025,8 +1380,8 @@ function ConversationCard({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <Avatar className="h-5 w-5">
-                      <AvatarFallback className="bg-slate-200 text-slate-700 text-xs">
+                    <Avatar className="h-5 w-5 flex-shrink-0">
+                      <AvatarFallback className="bg-slate-200 text-slate-700 text-xs flex items-center justify-center">
                         {conversation.assignedTo.avatar}
                       </AvatarFallback>
                     </Avatar>

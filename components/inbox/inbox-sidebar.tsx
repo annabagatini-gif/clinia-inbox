@@ -17,9 +17,20 @@ import { cn } from "@/lib/utils";
 interface InboxSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  counts?: {
+    all: number;
+    my: number;
+    unread: number;
+    unassigned: number;
+  };
 }
 
-export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
+export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarProps) {
+  // Valores padrão caso counts não seja fornecido
+  const allCount = counts?.all ?? 13;
+  const myCount = counts?.my ?? 8;
+  const unreadCount = counts?.unread ?? 0;
+  const unassignedCount = counts?.unassigned ?? 3;
   return (
       <div className="flex h-full flex-shrink-0 gap-2">
         {/* Icon Bar - Lateral esquerda */}
@@ -161,10 +172,10 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             </div>
             {activeTab === "all" ? (
               <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                13
+                {allCount}
               </span>
             ) : (
-              <span className="text-xs text-gray-500">13</span>
+              <span className="text-xs text-gray-500">{allCount}</span>
             )}
           </Button>
 
@@ -184,10 +195,10 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             </div>
             {activeTab === "my" ? (
               <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                8
+                {myCount}
               </span>
             ) : (
-              <span className="text-xs text-gray-500">8</span>
+              <span className="text-xs text-gray-500">{myCount}</span>
             )}
           </Button>
 
@@ -207,10 +218,10 @@ export function InboxSidebar({ activeTab, onTabChange }: InboxSidebarProps) {
             </div>
             {activeTab === "unassigned" ? (
               <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                3
+                {unassignedCount}
               </span>
             ) : (
-              <span className="text-xs text-gray-500">3</span>
+              <span className="text-xs text-gray-500">{unassignedCount}</span>
             )}
           </Button>
 

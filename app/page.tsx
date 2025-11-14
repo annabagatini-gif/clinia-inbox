@@ -9,6 +9,12 @@ import { mockConversations } from "@/lib/mock-data";
 export default function Home() {
   const [selectedConversationId, setSelectedConversationId] = useState<string>();
   const [activeTab, setActiveTab] = useState("my");
+  const [conversationCounts, setConversationCounts] = useState({
+    all: 13,
+    my: 8,
+    unread: 0,
+    unassigned: 3,
+  });
 
   const selectedConversation = mockConversations.find(
     (c) => c.id === selectedConversationId
@@ -18,7 +24,11 @@ export default function Home() {
     <div className="flex h-screen overflow-hidden bg-[#F1F3F4] p-2 gap-2">
       {/* Sidebar - oculta em mobile */}
       <div className="hidden lg:flex">
-        <InboxSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <InboxSidebar 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab}
+          counts={conversationCounts}
+        />
       </div>
       
       {/* Lista de conversas - oculta quando conversa está selecionada em mobile */}
@@ -27,6 +37,7 @@ export default function Home() {
           selectedId={selectedConversationId}
           onSelect={setSelectedConversationId}
           activeTab={activeTab}
+          onCountsChange={setConversationCounts}
         />
       </div>
       
