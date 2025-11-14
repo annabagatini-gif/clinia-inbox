@@ -293,7 +293,7 @@ export function ConversationListNew({
 
   return (
     <TooltipProvider>
-      <div className="w-[420px] bg-[#F9FAFB] flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-md h-full">
+      <div className="w-[420px] bg-white flex flex-col flex-shrink-0 overflow-hidden rounded-2xl shadow-lg h-full">
         {/* Header com Abas */}
         <div className="p-4 space-y-3 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -446,33 +446,28 @@ export function ConversationListNew({
                   </TooltipTrigger>
                   <TooltipContent>Filtros</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-[280px] p-0" align="end">
-                  <ScrollArea className="max-h-[calc(100vh-200px)]">
-                  <div className="p-3">
-                    <div className="flex items-center justify-between mb-3 min-h-[28px]">
+                <PopoverContent className="w-80" align="end">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
                       <h4 className="font-semibold text-sm">Filtros</h4>
-                      <div className="w-[84px] flex justify-end">
-                        {hasFilters && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs cursor-pointer"
-                            onClick={clearFilters}
-                          >
-                            Limpar tudo
-                          </Button>
-                        )}
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 text-xs cursor-pointer ${hasFilters ? 'visible' : 'invisible'}`}
+                        onClick={clearFilters}
+                      >
+                        Limpar tudo
+                      </Button>
                     </div>
 
                     {/* Quick Filters Pills */}
-                    <div className="flex flex-wrap gap-2 pb-3 mb-3 border-b">
+                    <div className="flex flex-wrap gap-2">
                       <Badge
                         onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
                         className={`h-7 px-3 text-xs cursor-pointer transition-all ${
                           filterUnreadOnly
-                            ? "bg-slate-200 text-slate-900 hover:bg-slate-300 border border-slate-400"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-transparent"
+                            ? "bg-slate-700 text-white hover:bg-slate-800"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                         }`}
                       >
                         <MailOpen className="h-3 w-3 mr-1.5" />
@@ -483,8 +478,8 @@ export function ConversationListNew({
                         onClick={() => setFilterImportantOnly(!filterImportantOnly)}
                         className={`h-7 px-3 text-xs cursor-pointer transition-all ${
                           filterImportantOnly
-                            ? "bg-slate-200 text-slate-900 hover:bg-slate-300 border border-slate-400"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-transparent"
+                            ? "bg-slate-700 text-white hover:bg-slate-800"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                         }`}
                       >
                         <Star className="h-3 w-3 mr-1.5" />
@@ -493,26 +488,10 @@ export function ConversationListNew({
                     </div>
 
                     {/* Status Filter */}
-                    <div className="space-y-2 pb-3 border-b">
-                      <div className="flex items-center justify-between min-h-[24px]">
-                        <label className="text-xs font-medium text-foreground">
-                          Status
-                        </label>
-                        <div className="w-[60px] flex justify-end">
-                          {filterStatus !== "all" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 text-xs cursor-pointer text-blue-600 hover:text-blue-700"
-                              onClick={() => setFilterStatus("all")}
-                            >
-                              Limpar
-                            </Button>
-                          )}
-                        </div>
-                      </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Status</label>
                       <Select value={filterStatus} onValueChange={setFilterStatus}>
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-9 w-full">
                           <SelectValue placeholder="Selecione um status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -525,100 +504,95 @@ export function ConversationListNew({
                     </div>
 
                     {/* Tags Filter */}
-                    <div className="space-y-2 py-3 border-b">
-                      <div className="flex items-center justify-between min-h-[24px]">
-                        <label className="text-xs font-medium text-foreground">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium">
                           Etiquetas {filterTags.length > 0 && `(${filterTags.length})`}
                         </label>
-                        <div className="w-[60px] flex justify-end">
-                          {filterTags.length > 0 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 text-xs cursor-pointer text-purple-600 hover:text-purple-700"
-                              onClick={() => setFilterTags([])}
-                            >
-                              Limpar
-                            </Button>
-                          )}
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 text-xs cursor-pointer text-slate-500 hover:text-slate-700 ${filterTags.length > 0 ? 'visible' : 'invisible'}`}
+                          onClick={() => setFilterTags([])}
+                        >
+                          Limpar
+                        </Button>
                       </div>
-                      <ScrollArea className="h-32">
-                        <div className="space-y-2 pr-2">
-                          {allTags.map((tag) => (
-                            <div key={tag} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`tag-${tag}`}
-                                checked={filterTags.includes(tag)}
-                                onCheckedChange={() => {
-                                  if (filterTags.includes(tag)) {
-                                    setFilterTags(filterTags.filter((t) => t !== tag));
-                                  } else {
-                                    setFilterTags([...filterTags, tag]);
-                                  }
-                                }}
-                                className="cursor-pointer"
-                              />
-                              <label
-                                htmlFor={`tag-${tag}`}
-                                className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {tag}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
+                      <div className="h-[120px] border rounded-md">
+                        <ScrollArea className="h-full">
+                          <div className="space-y-2 p-2">
+                            {allTags.map((tag) => (
+                              <div key={tag} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`tag-${tag}`}
+                                  checked={filterTags.includes(tag)}
+                                  onCheckedChange={() => {
+                                    if (filterTags.includes(tag)) {
+                                      setFilterTags(filterTags.filter((t) => t !== tag));
+                                    } else {
+                                      setFilterTags([...filterTags, tag]);
+                                    }
+                                  }}
+                                  className="cursor-pointer"
+                                />
+                                <label
+                                  htmlFor={`tag-${tag}`}
+                                  className="text-sm cursor-pointer leading-none"
+                                >
+                                  {tag}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
                     </div>
 
                     {/* Users Filter */}
-                    <div className="space-y-2 pt-3">
-                      <div className="flex items-center justify-between min-h-[24px]">
-                        <label className="text-xs font-medium text-foreground">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium">
                           Usuários {filterUsers.length > 0 && `(${filterUsers.length})`}
                         </label>
-                        <div className="w-[60px] flex justify-end">
-                          {filterUsers.length > 0 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 text-xs cursor-pointer text-green-600 hover:text-green-700"
-                              onClick={() => setFilterUsers([])}
-                            >
-                              Limpar
-                            </Button>
-                          )}
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 text-xs cursor-pointer text-slate-500 hover:text-slate-700 ${filterUsers.length > 0 ? 'visible' : 'invisible'}`}
+                          onClick={() => setFilterUsers([])}
+                        >
+                          Limpar
+                        </Button>
                       </div>
-                      <ScrollArea className="h-32">
-                        <div className="space-y-2 pr-2">
-                          {allUsers.map((user) => (
-                            <div key={user.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`user-${user.id}`}
-                                checked={filterUsers.includes(user.id)}
-                                onCheckedChange={() => {
-                                  if (filterUsers.includes(user.id)) {
-                                    setFilterUsers(filterUsers.filter((u) => u !== user.id));
-                                  } else {
-                                    setFilterUsers([...filterUsers, user.id]);
-                                  }
-                                }}
-                                className="cursor-pointer"
-                              />
-                              <label
-                                htmlFor={`user-${user.id}`}
-                                className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {user.name}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
+                      <div className="h-[120px] border rounded-md">
+                        <ScrollArea className="h-full">
+                          <div className="space-y-2 p-2">
+                            {allUsers.map((user) => (
+                              <div key={user.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`user-${user.id}`}
+                                  checked={filterUsers.includes(user.id)}
+                                  onCheckedChange={() => {
+                                    if (filterUsers.includes(user.id)) {
+                                      setFilterUsers(filterUsers.filter((u) => u !== user.id));
+                                    } else {
+                                      setFilterUsers([...filterUsers, user.id]);
+                                    }
+                                  }}
+                                  className="cursor-pointer"
+                                />
+                                <label
+                                  htmlFor={`user-${user.id}`}
+                                  className="text-sm cursor-pointer leading-none"
+                                >
+                                  {user.name}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
                     </div>
                   </div>
-                  </ScrollArea>
                 </PopoverContent>
               </Popover>
 
@@ -715,18 +689,17 @@ export function ConversationListNew({
 
           {/* Active Filters Badges */}
           {hasFilters && (
-            <div className="border-t bg-slate-50">
-              <div className="flex items-center justify-between px-3 py-2">
-                <div className="flex flex-wrap gap-2 flex-1">
+            <div className="px-4 py-3 border-t">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap gap-2 ml-[-16px]">
                   {filterStatus !== "all" && (
                     <Badge
-                      variant="secondary"
-                      className="h-6 text-xs gap-1 pr-1 flex items-center"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
                     >
                       Status: {filterStatus === "open" ? "Abertas" : filterStatus === "closed" ? "Fechadas" : "Bloqueadas"}
                       <button
                         onClick={() => setFilterStatus("all")}
-                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                        className="ml-1 hover:bg-slate-300 rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -735,13 +708,12 @@ export function ConversationListNew({
 
                   {filterUnreadOnly && (
                     <Badge
-                      variant="secondary"
-                      className="h-6 text-xs gap-1 pr-1 flex items-center"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
                     >
                       Não lidas
                       <button
                         onClick={() => setFilterUnreadOnly(false)}
-                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                        className="ml-1 hover:bg-slate-300 rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -750,13 +722,12 @@ export function ConversationListNew({
 
                   {filterImportantOnly && (
                     <Badge
-                      variant="secondary"
-                      className="h-6 text-xs gap-1 pr-1 flex items-center"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
                     >
                       Importantes
                       <button
                         onClick={() => setFilterImportantOnly(false)}
-                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                        className="ml-1 hover:bg-slate-300 rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -766,13 +737,12 @@ export function ConversationListNew({
                   {filterTags.map((tag) => (
                     <Badge
                       key={tag}
-                      variant="secondary"
-                      className="h-6 text-xs gap-1 pr-1 flex items-center"
+                      className="h-6 text-xs gap-1 pr-1 flex items-center bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
                     >
                       {tag}
                       <button
                         onClick={() => setFilterTags(filterTags.filter((t) => t !== tag))}
-                        className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                        className="ml-1 hover:bg-slate-300 rounded-sm p-0.5 cursor-pointer"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -784,13 +754,12 @@ export function ConversationListNew({
                     return user ? (
                       <Badge
                         key={userId}
-                        variant="secondary"
-                        className="h-6 text-xs gap-1 pr-1 flex items-center"
+                        className="h-6 text-xs gap-1 pr-1 flex items-center bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
                       >
                         {user.name}
                         <button
                           onClick={() => setFilterUsers(filterUsers.filter((u) => u !== userId))}
-                          className="ml-1 hover:bg-muted rounded-sm p-0.5 cursor-pointer"
+                          className="ml-1 hover:bg-slate-300 rounded-sm p-0.5 cursor-pointer"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -802,7 +771,7 @@ export function ConversationListNew({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs cursor-pointer ml-2 flex-shrink-0 bg-white hover:bg-slate-100 border-slate-300"
+                  className="h-7 text-xs cursor-pointer flex-shrink-0 bg-white hover:bg-slate-100 border-slate-300 mr-[-16px]"
                   onClick={clearFilters}
                 >
                   Limpar tudo
