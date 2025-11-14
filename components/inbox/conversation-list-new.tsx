@@ -740,15 +740,21 @@ export function ConversationListNew({
                 </PopoverContent>
               </Popover>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 cursor-pointer"
-                onClick={handleExportFiltered}
-                title={hasFilters ? 'Exportar conversas filtradas' : 'Exportar todas as conversas'}
-              >
-                <Download className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 cursor-pointer"
+                    onClick={handleExportFiltered}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {hasFilters ? 'Exportar conversas filtradas' : 'Exportar todas as conversas'}
+                </TooltipContent>
+              </Tooltip>
 
               {selectedConversations.length > 0 && (
                 <TooltipProvider>
