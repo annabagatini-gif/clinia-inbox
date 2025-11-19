@@ -73,6 +73,8 @@ interface ConversationListProps {
   selectedId?: string;
   onSelect: (id: string) => void;
   activeTab: string;
+  conversations?: Conversation[];
+  onConversationUpdate?: (conversationId: string, updates: Partial<Conversation>) => void;
   onCountsChange?: (counts: {
     all: number;
     my: number;
@@ -131,6 +133,8 @@ export function ConversationListNew({
   selectedId,
   onSelect,
   activeTab,
+  conversations: externalConversations,
+  onConversationUpdate,
   onCountsChange,
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -143,7 +147,10 @@ export function ConversationListNew({
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [localConversations, setLocalConversations] = useState<Conversation[]>(mockConversations);
+  
+  // Usa conversas externas se fornecidas, senão usa as locais
+  const conversations = externalConversations || localConversations;
   const [isAssignTagOpen, setIsAssignTagOpen] = useState(false);
   const [selectedTagsToAssign, setSelectedTagsToAssign] = useState<string[]>([]);
   const [isAssignUserOpen, setIsAssignUserOpen] = useState(false);
@@ -280,21 +287,51 @@ export function ConversationListNew({
   };
 
   const handleToggleUnread = (id: string) => {
-    setConversations(conversations.map(conv => {
-      if (conv.id === id) {
-        return { ...conv, unread: !conv.unread };
-      }
-      return conv;
-    }));
+    const conv = conversations.find(c => c.id === id);
+    if (!conv) return;
+    
+    if (onConversationUpdate && externalConversations) {
+      onConversationUpdate(id, { unread: !conv.unread });
+    } else {
+      setLocalConversations(localConversations.map(conv => {
+        if (conv.id === id) {
+          return { ...conv, unread: !conv.unread };
+        }
+        return conv;
+      }));
+    }
   };
 
   const handleToggleImportant = (id: string) => {
-    setConversations(conversations.map(conv => {
-      if (conv.id === id) {
-        return { ...conv, isImportant: !conv.isImportant };
-      }
-      return conv;
-    }));
+    const conv = conversations.find(c => c.id === id);
+    if (!conv) return;
+    
+    if (onConversationUpdate && externalConversations) {
+      onConversationUpdate(id, { isImportant: !conv.isImportant });
+    } else {
+      setLocalConversations(localConversations.map(conv => {
+        if (conv.id === id) {
+          return { ...conv, isImportant: !conv.isImportant };
+        }
+        return conv;
+      }));
+    }
+  };
+
+  const handleTogglePin = (id: string) => {
+    const conv = conversations.find(c => c.id === id);
+    if (!conv) return;
+    
+    if (onConversationUpdate && externalConversations) {
+      onConversationUpdate(id, { isPinned: !conv.isPinned });
+    } else {
+      setLocalConversations(localConversations.map(conv => {
+        if (conv.id === id) {
+          return { ...conv, isPinned: !conv.isPinned };
+        }
+        return conv;
+      }));
+    }
   };
 
   const clearFilters = () => {
@@ -306,15 +343,23 @@ export function ConversationListNew({
   };
 
   const handleAssignTags = () => {
-    // Aplicar etiquetas selecionadas às conversas selecionadas
-    setConversations(conversations.map(conv => {
-      if (selectedConversations.includes(conv.id)) {
-        // Adicionar etiquetas que ainda não existem
-        const newTags = [...new Set([...conv.tags, ...selectedTagsToAssign])];
-        return { ...conv, tags: newTags };
-      }
-      return conv;
-    }));
+    if (onConversationUpdate && externalConversations) {
+      selectedConversations.forEach(id => {
+        const conv = conversations.find(c => c.id === id);
+        if (conv) {
+          const newTags = [...new Set([...conv.tags, ...selectedTagsToAssign])];
+          onConversationUpdate(id, { tags: newTags });
+        }
+      });
+    } else {
+      setLocalConversations(localConversations.map(conv => {
+        if (selectedConversations.includes(conv.id)) {
+          const newTags = [...new Set([...conv.tags, ...selectedTagsToAssign])];
+          return { ...conv, tags: newTags };
+        }
+        return conv;
+      }));
+    }
     // Limpar seleção e fechar popover
     setSelectedTagsToAssign([]);
     setIsAssignTagOpen(false);
@@ -326,36 +371,54 @@ export function ConversationListNew({
     const user = allUsers.find(u => u.id === selectedUserToAssign);
     if (!user) return;
 
-    // Aplicar usuário selecionado às conversas selecionadas
-    setConversations(conversations.map(conv => {
-      if (selectedConversations.includes(conv.id)) {
-        return { 
-          ...conv, 
+    if (onConversationUpdate && externalConversations) {
+      selectedConversations.forEach(id => {
+        onConversationUpdate(id, {
           assignedTo: {
             id: user.id,
             name: user.name,
             avatar: user.avatar,
           }
-        };
-      }
-      return conv;
-    }));
+        });
+      });
+    } else {
+      setLocalConversations(localConversations.map(conv => {
+        if (selectedConversations.includes(conv.id)) {
+          return { 
+            ...conv, 
+            assignedTo: {
+              id: user.id,
+              name: user.name,
+              avatar: user.avatar,
+            }
+          };
+        }
+        return conv;
+      }));
+    }
     // Limpar seleção e fechar dialog
     setSelectedUserToAssign(null);
     setIsAssignUserOpen(false);
   };
 
   const handleChangeStatus = () => {
-    // Aplicar status selecionado às conversas selecionadas
-    setConversations(conversations.map(conv => {
-      if (selectedConversations.includes(conv.id)) {
-        return { 
-          ...conv, 
+    if (onConversationUpdate && externalConversations) {
+      selectedConversations.forEach(id => {
+        onConversationUpdate(id, {
           status: selectedStatus as "open" | "closed" | "blocked"
-        };
-      }
-      return conv;
-    }));
+        });
+      });
+    } else {
+      setLocalConversations(localConversations.map(conv => {
+        if (selectedConversations.includes(conv.id)) {
+          return { 
+            ...conv, 
+            status: selectedStatus as "open" | "closed" | "blocked"
+          };
+        }
+        return conv;
+      }));
+    }
     // Resetar e fechar dialog
     setSelectedStatus("open");
     setIsChangeStatusOpen(false);
@@ -406,7 +469,13 @@ export function ConversationListNew({
     };
     
     // Adicionar nova conversa no início da lista
-    setConversations([newConversation, ...conversations]);
+    if (externalConversations && onConversationUpdate) {
+      // Se há conversas externas, não podemos adicionar diretamente aqui
+      // Por enquanto, vamos usar o estado local se não houver prop externa
+      setLocalConversations([newConversation, ...localConversations]);
+    } else {
+      setLocalConversations([newConversation, ...localConversations]);
+    }
     
     // Limpar formulário
     setNewContactName("");
@@ -1173,6 +1242,7 @@ export function ConversationListNew({
                 onCheck={handleSelectConversation}
                 onToggleUnread={handleToggleUnread}
                 onToggleImportant={handleToggleImportant}
+                onTogglePin={handleTogglePin}
                 selectionMode={selectionMode}
               />
             ))}
@@ -1198,6 +1268,7 @@ function ConversationCard({
   onCheck,
   onToggleUnread,
   onToggleImportant,
+  onTogglePin,
   selectionMode,
 }: {
   conversation: Conversation;
@@ -1207,6 +1278,7 @@ function ConversationCard({
   onCheck: (id: string) => void;
   onToggleUnread: (id: string) => void;
   onToggleImportant: (id: string) => void;
+  onTogglePin: (id: string) => void;
   selectionMode: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -1379,7 +1451,12 @@ function ConversationCard({
                     ? "Remover importante"
                     : "Marcar importante"}
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    onTogglePin(conversation.id);
+                  }}
+                >
                   <Pin className="h-4 w-4 mr-2" />
                   {conversation.isPinned ? "Desafixar" : "Fixar"}
                 </DropdownMenuItem>
