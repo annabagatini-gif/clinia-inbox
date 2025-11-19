@@ -16,6 +16,7 @@ export interface Conversation {
     avatar: string;
   };
   status: "open" | "closed" | "blocked";
+  automationEnabled?: boolean;
 }
 
 export interface Message {

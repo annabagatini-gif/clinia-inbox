@@ -963,24 +963,41 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
       ? newQuickReplyAttachmentFile.name
       : null;
 
-    const newReply: typeof quickReplies[0] = {
-      id: `quick-user-${Date.now()}`,
-      title: newQuickReplyTitle.trim(),
-      content: newQuickReplyContent.trim(),
-      // Se o tipo escolhido for "image", salvar como imagem
-      ...(newQuickReplyAttachmentType === "image" && attachmentUrl && { image: attachmentUrl }),
-      // Se o tipo escolhido for "file" ou "video", salvar como anexo
-      ...(newQuickReplyAttachmentType !== "image" && attachmentName && attachmentUrl && {
+    let newReply: typeof quickReplies[number];
+    
+    if (newQuickReplyAttachmentType === "image" && attachmentUrl) {
+      newReply = {
+        id: `quick-user-${Date.now()}`,
+        title: newQuickReplyTitle.trim(),
+        content: newQuickReplyContent.trim(),
+        image: attachmentUrl,
+      };
+    } else if (newQuickReplyAttachmentType !== "image" && attachmentName && attachmentUrl) {
+      newReply = {
+        id: `quick-user-${Date.now()}`,
+        title: newQuickReplyTitle.trim(),
+        content: newQuickReplyContent.trim(),
         attachment: {
           name: attachmentName,
           url: attachmentUrl,
           type: newQuickReplyAttachmentFile?.type || (newQuickReplyAttachmentType === "video" ? "video/mp4" : "application/octet-stream"),
-          size: newQuickReplyAttachmentFile?.size,
+          size: newQuickReplyAttachmentFile?.size || 0,
         },
-      }),
-      // Se não houver arquivo anexado, usar a URL de imagem manual se existir
-      ...(!newQuickReplyAttachmentFile && imageUrl && { image: imageUrl }),
-    };
+      };
+    } else if (!newQuickReplyAttachmentFile && imageUrl) {
+      newReply = {
+        id: `quick-user-${Date.now()}`,
+        title: newQuickReplyTitle.trim(),
+        content: newQuickReplyContent.trim(),
+        image: imageUrl,
+      };
+    } else {
+      newReply = {
+        id: `quick-user-${Date.now()}`,
+        title: newQuickReplyTitle.trim(),
+        content: newQuickReplyContent.trim(),
+      };
+    }
 
     setUserQuickReplies([...userQuickReplies, newReply]);
     
@@ -1471,8 +1488,10 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                           // Se houver apenas 1 contato, toda a área é clicável
                           <button
                             onClick={() => {
-                              setSelectedContactDetail(message.contacts[0]);
-                              setIsContactDetailOpen(true);
+                              if (message.contacts && message.contacts[0]) {
+                                setSelectedContactDetail(message.contacts[0]);
+                                setIsContactDetailOpen(true);
+                              }
                             }}
                             className={`w-full p-3 rounded-lg text-left transition-colors ${
                               message.isUser
@@ -1514,8 +1533,8 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                           >
                             <div className="flex items-center gap-2.5">
                               {/* Avatares empilhados horizontalmente */}
-                              <div className="relative flex-shrink-0 flex items-center" style={{ width: `${32 + (Math.min(message.contacts.length, 3) - 1) * 8}px`, height: '32px' }}>
-                                {message.contacts.slice(0, Math.min(message.contacts.length, 3)).map((contact, index) => (
+                              <div className="relative flex-shrink-0 flex items-center" style={{ width: `${32 + (Math.min(message.contacts?.length || 0, 3) - 1) * 8}px`, height: '32px' }}>
+                                {message.contacts?.slice(0, Math.min(message.contacts.length, 3)).map((contact, index) => (
                                   <Avatar
                                     key={contact.id}
                                     className="absolute rounded-full border-2 border-white dark:border-gray-800"
@@ -1523,7 +1542,7 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                                       left: `${index * 8}px`,
                                       width: '32px',
                                       height: '32px',
-                                      zIndex: Math.min(message.contacts.length, 3) - index,
+                                      zIndex: Math.min(message.contacts?.length || 0, 3) - index,
                                     }}
                                   >
                                     <AvatarFallback className={`text-xs flex items-center justify-center ${
@@ -1540,9 +1559,9 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                                 <p className={`text-sm font-medium ${
                                   message.isUser ? 'text-foreground' : 'text-foreground'
                                 }`}>
-                                  {message.contacts.length === 1
+                                  {message.contacts && message.contacts.length === 1
                                     ? message.contacts[0].name
-                                    : `${message.contacts[0].name} e outros ${message.contacts.length - 1} ${message.contacts.length - 1 === 1 ? 'contato' : 'contatos'}`
+                                    : message.contacts && `${message.contacts[0].name} e outros ${message.contacts.length - 1} ${message.contacts.length - 1 === 1 ? 'contato' : 'contatos'}`
                                   }
                                 </p>
                                 <p className={`text-xs mt-0.5 font-medium ${
