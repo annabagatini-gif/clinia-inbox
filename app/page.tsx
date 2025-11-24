@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InboxSidebar } from "@/components/inbox/inbox-sidebar";
 import { ConversationListNew } from "@/components/inbox/conversation-list-new";
 import { ChatArea } from "@/components/inbox/chat-area";
-import { mockConversations } from "@/lib/mock-data";
+import { loadConversations, saveConversations, deleteConversation } from "@/lib/storage";
 import { Conversation } from "@/types/inbox";
+import { CURRENT_USER } from "@/lib/user-config";
 
 export default function Home() {
-  const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string>();
   const [activeTab, setActiveTab] = useState("my");
   const [conversationCounts, setConversationCounts] = useState({
@@ -18,16 +19,64 @@ export default function Home() {
     unassigned: 3,
   });
 
+  // Carregar conversas do localStorage na inicialização
+  useEffect(() => {
+    const loadedConversations = loadConversations();
+    setConversations(loadedConversations);
+  }, []);
+
+  // Salvar conversas no localStorage sempre que houver mudanças
+  useEffect(() => {
+    if (conversations.length > 0) {
+      saveConversations(conversations);
+    }
+  }, [conversations]);
+
+  // Marcar conversa como lida quando for selecionada
+  useEffect(() => {
+    if (selectedConversationId) {
+      const selectedConv = conversations.find(c => c.id === selectedConversationId);
+      if (selectedConv && (selectedConv.unread || selectedConv.unreadCount > 0)) {
+        handleConversationUpdate(selectedConversationId, {
+          unread: false,
+          unreadCount: 0,
+        });
+      }
+    }
+  }, [selectedConversationId]);
+
   const selectedConversation = conversations.find(
     (c) => c.id === selectedConversationId
   );
 
   const handleConversationUpdate = (conversationId: string, updates: Partial<Conversation>) => {
-    setConversations((prev) =>
-      prev.map((conv) =>
+    setConversations((prev) => {
+      const updated = prev.map((conv) =>
         conv.id === conversationId ? { ...conv, ...updates } : conv
-      )
-    );
+      );
+      return updated;
+    });
+  };
+
+  const handleConversationDelete = (conversationIds: string[]) => {
+    // Deletar do localStorage também
+    conversationIds.forEach(id => {
+      deleteConversation(id);
+    });
+    
+    setConversations((prev) => {
+      const updated = prev.filter((conv) => !conversationIds.includes(conv.id));
+      // Se a conversa selecionada foi deletada, limpar seleção
+      if (conversationIds.includes(selectedConversationId || "")) {
+        setSelectedConversationId(undefined);
+      }
+      return updated;
+    });
+  };
+
+  const handleConversationAdd = (conversation: Conversation) => {
+    setConversations((prev) => [conversation, ...prev]);
+    setSelectedConversationId(conversation.id);
   };
 
   const handleNavigateToConversation = (contactName: string, phone: string) => {
@@ -60,7 +109,10 @@ export default function Home() {
         status: "open",
       };
       
-      setConversations((prev) => [newConversation, ...prev]);
+      setConversations((prev) => {
+        const updated = [newConversation, ...prev];
+        return updated;
+      });
       setSelectedConversationId(newConversation.id);
     } else {
       setSelectedConversationId(foundConversation.id);
@@ -87,6 +139,8 @@ export default function Home() {
           onCountsChange={setConversationCounts}
           conversations={conversations}
           onConversationUpdate={handleConversationUpdate}
+          onConversationDelete={handleConversationDelete}
+          onConversationAdd={handleConversationAdd}
         />
       </div>
       

@@ -68,6 +68,7 @@ import { Label } from "@/components/ui/label";
 import { mockConversations } from "@/lib/mock-data";
 import { Conversation } from "@/types/inbox";
 import { toast } from "sonner";
+import { CURRENT_USER } from "@/lib/user-config";
 
 interface ConversationListProps {
   selectedId?: string;
@@ -75,6 +76,8 @@ interface ConversationListProps {
   activeTab: string;
   conversations?: Conversation[];
   onConversationUpdate?: (conversationId: string, updates: Partial<Conversation>) => void;
+  onConversationDelete?: (conversationIds: string[]) => void;
+  onConversationAdd?: (conversation: Conversation) => void;
   onCountsChange?: (counts: {
     all: number;
     my: number;
@@ -135,6 +138,8 @@ export function ConversationListNew({
   activeTab,
   conversations: externalConversations,
   onConversationUpdate,
+  onConversationDelete,
+  onConversationAdd,
   onCountsChange,
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -170,7 +175,7 @@ export function ConversationListNew({
   // Calcula badges de contagem
   const allCount = conversations.filter((c) => c.status === "open").length;
   const myCount = conversations.filter(
-    (c) => c.assignedTo?.id === "user1" && c.status === "open"
+    (c) => c.assignedTo?.id === CURRENT_USER.id && c.status === "open"
   ).length;
   const unreadCount = conversations.filter(
     (c) => c.unread && c.status === "open"
@@ -216,7 +221,7 @@ export function ConversationListNew({
   const filteredConversations = conversations.filter((conv) => {
     // Filtro de aba
     if (activeTab === "all" && conv.status !== "open") return false;
-    if (activeTab === "my" && (conv.assignedTo?.id !== "user1" || conv.status !== "open")) return false;
+    if (activeTab === "my" && (conv.assignedTo?.id !== CURRENT_USER.id || conv.status !== "open")) return false;
     if (activeTab === "unread" && (!conv.unread || conv.status !== "open")) return false;
     if (activeTab === "unassigned" && (conv.assignedTo || conv.status !== "open")) return false;
     if (activeTab === "groups") return false; // TODO: adicionar lógica de grupos
@@ -296,6 +301,25 @@ export function ConversationListNew({
       setLocalConversations(localConversations.map(conv => {
         if (conv.id === id) {
           return { ...conv, unread: !conv.unread };
+        }
+        return conv;
+      }));
+    }
+  };
+
+  const handleMarkAsRead = (id: string) => {
+    const conv = conversations.find(c => c.id === id);
+    if (!conv) return;
+    
+    // Se já estiver lida, não fazer nada
+    if (!conv.unread && conv.unreadCount === 0) return;
+    
+    if (onConversationUpdate && externalConversations) {
+      onConversationUpdate(id, { unread: false, unreadCount: 0 });
+    } else {
+      setLocalConversations(localConversations.map(conv => {
+        if (conv.id === id) {
+          return { ...conv, unread: false, unreadCount: 0 };
         }
         return conv;
       }));
@@ -433,6 +457,38 @@ export function ConversationListNew({
     });
   };
 
+  const handleDeleteConversations = () => {
+    if (selectedConversations.length === 0) return;
+    
+    if (onConversationDelete && externalConversations) {
+      onConversationDelete(selectedConversations);
+      toast.success(`${selectedConversations.length} ${selectedConversations.length === 1 ? 'conversa removida' : 'conversas removidas'}`, {
+        duration: 3000,
+      });
+      setSelectedConversations([]);
+    } else {
+      setLocalConversations(localConversations.filter(conv => !selectedConversations.includes(conv.id)));
+      toast.success(`${selectedConversations.length} ${selectedConversations.length === 1 ? 'conversa removida' : 'conversas removidas'}`, {
+        duration: 3000,
+      });
+      setSelectedConversations([]);
+    }
+  };
+
+  const handleDeleteSingleConversation = (conversationId: string) => {
+    if (onConversationDelete && externalConversations) {
+      onConversationDelete([conversationId]);
+      toast.success('Conversa removida', {
+        duration: 3000,
+      });
+    } else {
+      setLocalConversations(localConversations.filter(conv => conv.id !== conversationId));
+      toast.success('Conversa removida', {
+        duration: 3000,
+      });
+    }
+  };
+
   const hasFilters =
     filterStatus !== "all" || filterUnreadOnly || filterImportantOnly || filterTags.length > 0 || filterUsers.length > 0;
 
@@ -461,20 +517,20 @@ export function ConversationListNew({
       isPinned: false,
       isImportant: false,
       assignedTo: {
-        id: "user1",
-        name: "June Jensen",
-        avatar: "JJ",
+        id: CURRENT_USER.id,
+        name: CURRENT_USER.name,
+        avatar: CURRENT_USER.avatar,
       },
       status: "open",
     };
     
     // Adicionar nova conversa no início da lista
-    if (externalConversations && onConversationUpdate) {
-      // Se há conversas externas, não podemos adicionar diretamente aqui
-      // Por enquanto, vamos usar o estado local se não houver prop externa
-      setLocalConversations([newConversation, ...localConversations]);
+    if (externalConversations && onConversationAdd) {
+      onConversationAdd(newConversation);
+      onSelect(newConversation.id);
     } else {
       setLocalConversations([newConversation, ...localConversations]);
+      onSelect(newConversation.id);
     }
     
     // Limpar formulário
@@ -902,7 +958,10 @@ export function ConversationListNew({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem className="text-destructive" onSelect={(e) => {
+                            e.preventDefault();
+                            handleDeleteConversations();
+                          }}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             Remover
                           </DropdownMenuItem>
@@ -1241,8 +1300,10 @@ export function ConversationListNew({
                 onSelect={onSelect}
                 onCheck={handleSelectConversation}
                 onToggleUnread={handleToggleUnread}
+                onMarkAsRead={handleMarkAsRead}
                 onToggleImportant={handleToggleImportant}
                 onTogglePin={handleTogglePin}
+                onDelete={handleDeleteSingleConversation}
                 selectionMode={selectionMode}
               />
             ))}
@@ -1267,8 +1328,10 @@ function ConversationCard({
   onSelect,
   onCheck,
   onToggleUnread,
+  onMarkAsRead,
   onToggleImportant,
   onTogglePin,
+  onDelete,
   selectionMode,
 }: {
   conversation: Conversation;
@@ -1277,8 +1340,10 @@ function ConversationCard({
   onSelect: (id: string) => void;
   onCheck: (id: string) => void;
   onToggleUnread: (id: string) => void;
+  onMarkAsRead?: (id: string) => void;
   onToggleImportant: (id: string) => void;
   onTogglePin: (id: string) => void;
+  onDelete?: (id: string) => void;
   selectionMode: boolean;
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -1305,9 +1370,9 @@ function ConversationCard({
         className="flex-1 min-w-0 overflow-hidden"
         onClick={() => {
           onSelect(conversation.id);
-          // Marca como lida se ainda não estiver lida
-          if (conversation.unread) {
-            onToggleUnread(conversation.id);
+          // Marca como lida se ainda não estiver lida e zera o contador
+          if ((conversation.unread || conversation.unreadCount > 0) && onMarkAsRead) {
+            onMarkAsRead(conversation.id);
           }
         }}
       >
@@ -1465,7 +1530,15 @@ function ConversationCard({
                   <Ban className="h-4 w-4 mr-2" />
                   Bloquear
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive">
+                <DropdownMenuItem 
+                  className="text-destructive"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    if (onDelete) {
+                      onDelete(conversation.id);
+                    }
+                  }}
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Remover
                 </DropdownMenuItem>

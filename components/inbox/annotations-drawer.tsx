@@ -310,30 +310,28 @@ export function AnnotationsDrawer({
             </div>
           )}
 
-          <Separator />
+          {filteredAnnotations.length > 0 && <Separator />}
 
           {/* Lista de Anotações */}
           <ScrollArea className="h-[calc(100vh-400px)]">
             <div className="space-y-3">
-              {filteredAnnotations.length === 0 ? (
+              {filteredAnnotations.length === 0 && !isCreating ? (
                 <div className="text-center text-muted-foreground py-8 space-y-4">
                   <StickyNote className="h-12 w-12 mx-auto mb-2 opacity-50" strokeWidth={1.5} />
-                  <p>
+                  <p className="max-w-[220px] mx-auto">
                     {filter === "notes" 
                       ? "Nenhuma nota encontrada" 
                       : filter === "reminders"
                       ? "Nenhum lembrete encontrado"
                       : "Nenhuma nota e nenhum lembrete encontrados"}
                   </p>
-                  {!isCreating && (
-                    <Button
-                      onClick={() => setIsCreating(true)}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Criar
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => setIsCreating(true)}
+                    className="w-auto mx-auto"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar
+                  </Button>
                 </div>
               ) : (
                 <>

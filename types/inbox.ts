@@ -19,6 +19,15 @@ export interface Conversation {
   automationEnabled?: boolean;
 }
 
+export type MessageStatus = 
+  | "sent"           // Enviada (check simples)
+  | "delivered"      // Entregue (dois checks)
+  | "read"           // Lida (dois checks azuis)
+  | "error_internet" // Erro de internet (check simples)
+  | "error_credits"  // Falta de créditos Gupshup (bubble vermelha)
+  | "error_app_down" // App Clinia fora do ar (check simples)
+  | "error_24h_window"; // Fora da janela de 24h (check simples)
+
 export interface Message {
   id: string;
   sender: string;
@@ -26,6 +35,17 @@ export interface Message {
   timestamp: string;
   isUser: boolean;
   isSummary?: boolean;
+  isFavorite?: boolean;
+  status?: MessageStatus; // Status de entrega/erro da mensagem
+  replyTo?: {
+    id: string;
+    content: string;
+    sender: string;
+  };
+  reactions?: Array<{
+    emoji: string;
+    userId: string;
+  }>;
   image?: string;
   attachment?: {
     name: string;
@@ -33,12 +53,18 @@ export interface Message {
     type: string;
     size?: number;
   };
+  audio?: {
+    url: string;
+    duration: number;
+    transcription?: string;
+  };
   contacts?: Array<{
     id: string;
     name: string;
     avatar: string;
     phone: string;
   }>;
+  deletedForEveryone?: boolean;
 }
 
 export interface Annotation {
