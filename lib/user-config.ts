@@ -18,7 +18,7 @@ export function isConversationAssignedToMe(conversation?: { assignedTo?: { id: s
 /**
  * Verifica se uma conversa é um grupo (para implementação futura)
  */
-export function isGroupConversation(conversation?: { channel?: string }): boolean {
+export function isGroupConversation(conversation?: { assignedTo?: { id: string }; channel?: string }): boolean {
   // Por enquanto, grupos não estão implementados
   // Quando implementar, verificar se conversation.type === "group" ou similar
   return false;

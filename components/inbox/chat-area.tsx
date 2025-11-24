@@ -711,10 +711,10 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
   const [recordedAudio, setRecordedAudio] = useState<{ blob: Blob; url: string; duration: number } | null>(null);
   const [isRecordedAudioPlaying, setIsRecordedAudioPlaying] = useState(false);
   const [recordedAudioTime, setRecordedAudioTime] = useState(0);
-  const recordedAudioPlayerRef = useRef<HTMLAudioElement | Audio | null>(null);
+  const recordedAudioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const [isPlayingPausedRecording, setIsPlayingPausedRecording] = useState(false);
   const [hasPausedRecordingPreview, setHasPausedRecordingPreview] = useState(false);
-  const pausedRecordingAudioRef = useRef<HTMLAudioElement | Audio | null>(null);
+  const pausedRecordingAudioRef = useRef<HTMLAudioElement | null>(null);
   const pausedRecordingUrlRef = useRef<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
