@@ -142,15 +142,6 @@ export default function Home() {
     (c) => c.id === selectedConversationId
   );
 
-  const handleConversationUpdate = (conversationId: string, updates: Partial<Conversation>) => {
-    setConversations((prev) => {
-      const updated = prev.map((conv) =>
-        conv.id === conversationId ? { ...conv, ...updates } : conv
-      );
-      return updated;
-    });
-  };
-
   const handleConversationDelete = (conversationIds: string[]) => {
     // Deletar do localStorage também
     conversationIds.forEach(id => {
