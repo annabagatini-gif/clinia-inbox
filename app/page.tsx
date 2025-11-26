@@ -27,22 +27,31 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       
+      // Se houver ?conversation=ID na URL, seleciona essa conversa
+      const conversationId = urlParams.get("conversation");
+      if (conversationId) {
+        const foundConversation = loadedConversations.find(conv => conv.id === conversationId);
+        if (foundConversation) {
+          setSelectedConversationId(foundConversation.id);
+          return;
+        }
+      }
+      
       // Se houver ?drawer=true na URL, seleciona a primeira conversa automaticamente
       if (urlParams.get("drawer") === "true" && loadedConversations.length > 0) {
         setSelectedConversationId(loadedConversations[0].id);
+        return;
       }
       
-      // Sempre seleciona a conversa da Maria Silva por padrão (se existir)
-      if (!urlParams.get("drawer")) {
-        const mariaConversation = loadedConversations.find(
-          conv => conv.name.toLowerCase().includes("maria") && conv.name.toLowerCase().includes("silva")
-        );
-        if (mariaConversation) {
-          setSelectedConversationId(mariaConversation.id);
-        } else if (loadedConversations.length > 0) {
-          // Se não encontrar Maria Silva, seleciona a primeira conversa
-          setSelectedConversationId(loadedConversations[0].id);
-        }
+      // Se houver ?maria=true ou nenhum parâmetro, seleciona Maria Silva por padrão
+      const mariaConversation = loadedConversations.find(
+        conv => conv.name.toLowerCase().includes("maria") && conv.name.toLowerCase().includes("silva")
+      );
+      if (mariaConversation) {
+        setSelectedConversationId(mariaConversation.id);
+      } else if (loadedConversations.length > 0) {
+        // Se não encontrar Maria Silva, seleciona a primeira conversa
+        setSelectedConversationId(loadedConversations[0].id);
       }
     }
   }, []);
