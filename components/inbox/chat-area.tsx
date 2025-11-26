@@ -776,6 +776,16 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
   const [isAppointmentsExpanded, setIsAppointmentsExpanded] = useState(true);
   const [isFavoriteMessagesExpanded, setIsFavoriteMessagesExpanded] = useState(true);
 
+  // Abre a drawer automaticamente se houver query parameter ?drawer=true
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("drawer") === "true" && conversation && !isConversationDrawerOpen) {
+        setIsConversationDrawerOpen(true);
+      }
+    }
+  }, [conversation, isConversationDrawerOpen]);
+
   // Inicializa o nome editado e observações quando a drawer abrir
   useEffect(() => {
     if (isConversationDrawerOpen && conversation) {

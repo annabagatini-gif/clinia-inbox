@@ -23,6 +23,14 @@ export default function Home() {
   useEffect(() => {
     const loadedConversations = loadConversations();
     setConversations(loadedConversations);
+    
+    // Se houver ?drawer=true na URL, seleciona a primeira conversa automaticamente
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("drawer") === "true" && loadedConversations.length > 0) {
+        setSelectedConversationId(loadedConversations[0].id);
+      }
+    }
   }, []);
 
   // Salvar conversas no localStorage sempre que houver mudanças
