@@ -6,7 +6,7 @@ export interface Conversation {
   timestamp: string;
   unread: boolean;
   unreadCount: number;
-  channel: "whatsapp" | "instagram";
+  channel: "whatsapp" | "instagram" | "facebook";
   tags: string[];
   isPinned: boolean;
   isImportant: boolean;
@@ -86,6 +86,27 @@ export interface Message {
     added: string[];
     removed: string[];
     changedBy?: string; // Nome do usuário que fez a mudança
+  };
+  assignmentChange?: {
+    previous?: {
+      id: string;
+      name: string;
+      avatar: string;
+      type: "user" | "group";
+    };
+    current?: {
+      id: string;
+      name: string;
+      avatar: string;
+      type: "user" | "group";
+    };
+    changedBy?: string; // Nome do usuário que fez a mudança
+  };
+  statusChange?: {
+    previous: "open" | "closed" | "blocked";
+    current: "open" | "closed" | "blocked";
+    changedBy?: string; // Nome do usuário que fez a mudança
+    changedAt?: string; // Timestamp da mudança
   };
 }
 

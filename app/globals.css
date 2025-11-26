@@ -149,4 +149,41 @@
     visibility: visible !important;
   }
   
+  /* Highlight para mensagens favoritadas - apenas na bubble */
+  .highlight-favorite-message {
+    animation: highlightPulse 2s ease-in-out;
+    position: relative;
+    z-index: 1;
+  }
+  
+  @keyframes highlightPulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(250, 204, 204, 21, 0.7), 0 0 0 0 rgba(250, 204, 21, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.4), 0 0 0 8px rgba(250, 204, 21, 0.2);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(250, 204, 21, 0), 0 0 0 0 rgba(250, 204, 21, 0);
+    }
+  }
+  
+  /* Garantir que o container da mensagem não corte o highlight */
+  [data-message-id] {
+    overflow: visible !important;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  
+  [data-message-id] > div {
+    overflow: visible !important;
+  }
+  
+  /* Tour highlight */
+  .tour-highlight {
+    position: relative;
+    z-index: 10001 !important;
+    transition: all 0.3s ease;
+  }
+  
 }

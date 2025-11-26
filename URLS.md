@@ -2,6 +2,14 @@
 
 ## URLs Disponíveis
 
+### 0. Onboarding (Guia de Funcionalidades)
+```
+https://sua-url.vercel.app/onboarding
+```
+- Página interativa explicando todas as funcionalidades da inbox
+- Navegação passo a passo com exemplos visuais
+- Ideal para novos usuários ou demonstrações
+
 ### 1. URL Padrão (Maria Silva selecionada)
 ```
 https://sua-url.vercel.app

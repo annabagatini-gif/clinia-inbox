@@ -313,39 +313,38 @@ export function AnnotationsDrawer({
           {filteredAnnotations.length > 0 && <Separator />}
 
           {/* Lista de Anotações */}
-          <ScrollArea className="h-[calc(100vh-400px)]">
-            <div className="space-y-3">
-              {filteredAnnotations.length === 0 && !isCreating ? (
-                <div className="text-center text-muted-foreground py-8 space-y-4">
-                  <StickyNote className="h-12 w-12 mx-auto mb-2 opacity-50" strokeWidth={1.5} />
-                  <p className="max-w-[220px] mx-auto">
-                    {filter === "notes" 
-                      ? "Nenhuma nota encontrada" 
-                      : filter === "reminders"
-                      ? "Nenhum lembrete encontrado"
-                      : "Nenhuma nota e nenhum lembrete encontrados"}
-                  </p>
+          {filteredAnnotations.length === 0 && !isCreating ? (
+            <div className="text-center text-muted-foreground py-8 space-y-4">
+              <StickyNote className="h-12 w-12 mx-auto mb-2 opacity-50" strokeWidth={1.5} />
+              <p className="max-w-[220px] mx-auto">
+                {filter === "notes" 
+                  ? "Nenhuma nota encontrada" 
+                  : filter === "reminders"
+                  ? "Nenhum lembrete encontrado"
+                  : "Nenhuma nota e nenhum lembrete encontrados"}
+              </p>
+              <Button
+                onClick={() => setIsCreating(true)}
+                className="w-auto mx-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Criar
+              </Button>
+            </div>
+          ) : (
+            <ScrollArea className="h-[calc(100vh-400px)]">
+              <div className="space-y-3">
+                {/* Botão Criar - no topo quando há itens */}
+                {!isCreating && (
                   <Button
                     onClick={() => setIsCreating(true)}
-                    className="w-auto mx-auto"
+                    className="w-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Criar
                   </Button>
-                </div>
-              ) : (
-                <>
-                  {/* Botão Criar - no topo quando há itens */}
-                  {!isCreating && (
-                    <Button
-                      onClick={() => setIsCreating(true)}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Criar
-                    </Button>
-                  )}
-                  {filteredAnnotations.map((annotation) => {
+                )}
+                {filteredAnnotations.map((annotation) => {
                   if (editingId === annotation.id) {
                     return (
                       <div key={annotation.id} className="p-4 border rounded-lg space-y-3 bg-yellow-50 dark:bg-yellow-950">
@@ -475,10 +474,9 @@ export function AnnotationsDrawer({
                     </div>
                   );
                   })}
-                </>
-              )}
-            </div>
-          </ScrollArea>
+              </div>
+            </ScrollArea>
+          )}
         </div>
       </SheetContent>
 

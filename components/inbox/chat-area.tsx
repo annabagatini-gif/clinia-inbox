@@ -775,6 +775,12 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
   const [isAutomationsExpanded, setIsAutomationsExpanded] = useState(true);
   const [isAppointmentsExpanded, setIsAppointmentsExpanded] = useState(true);
   const [isFavoriteMessagesExpanded, setIsFavoriteMessagesExpanded] = useState(true);
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<number[]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchResultsRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Abre a drawer automaticamente se houver query parameter ?drawer=true
   useEffect(() => {
@@ -890,7 +896,7 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
     if (conversationId) {
       const allMessages = loadMessages();
       setMessages(allMessages[conversationId] || []);
-      } else {
+    } else {
       setMessages([]);
     }
     // Resetar estado de reescrita ao mudar de conversa
@@ -910,10 +916,110 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
     }
   }, [messages, conversationId]);
 
-  // Scroll automático para a última mensagem
+  // Filtrar mensagens e encontrar resultados quando houver busca
+  const filteredMessages = (() => {
+    if (!searchQuery || searchQuery.trim().length === 0) {
+      return messages;
+    }
+    
+    const queryLower = searchQuery.toLowerCase();
+    const results: number[] = [];
+    
+    const filtered = messages.map((msg, index) => {
+      // Ignorar mensagens do sistema/resumo na busca
+      if (msg.isSummary || msg.deletedForEveryone) {
+        return msg;
+      }
+      
+      // Buscar no conteúdo da mensagem
+      if (msg.content && msg.content.toLowerCase().includes(queryLower)) {
+        results.push(index);
+        return { ...msg, isSearchMatch: true };
+      }
+      
+      return msg;
+    });
+    
+    // Inverter a ordem dos resultados para que o mais recente seja o primeiro (índice 0)
+    const reversedResults = [...results].reverse();
+    
+    // Atualizar resultados apenas se mudou
+    if (JSON.stringify(reversedResults) !== JSON.stringify(searchResults)) {
+      setSearchResults(reversedResults);
+      if (reversedResults.length > 0 && currentSearchIndex === -1) {
+        setCurrentSearchIndex(0);
+      } else if (reversedResults.length === 0) {
+        setCurrentSearchIndex(-1);
+      }
+    }
+    
+    return filtered;
+  })();
+
+  // Navegar entre resultados de busca
+  const navigateSearch = (direction: "next" | "prev") => {
+    if (searchResults.length === 0) return;
+    
+    let newIndex = currentSearchIndex;
+    if (direction === "next") {
+      newIndex = (currentSearchIndex + 1) % searchResults.length;
+    } else {
+      newIndex = currentSearchIndex - 1;
+      if (newIndex < 0) newIndex = searchResults.length - 1;
+    }
+    
+    setCurrentSearchIndex(newIndex);
+    const messageIndex = searchResults[newIndex];
+    const message = messages[messageIndex];
+    
+    if (message) {
+      setTimeout(() => {
+        const element = searchResultsRefs.current.get(message.id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+    }
+  };
+
+  // Fechar modo de busca
+  const closeSearch = () => {
+    setIsSearchMode(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setCurrentSearchIndex(-1);
+  };
+
+  // Abrir modo de busca e focar no input
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (isSearchMode && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchMode]);
+
+  // Scroll para o resultado atual quando navegar entre resultados
+  useEffect(() => {
+    if (currentSearchIndex >= 0 && searchResults.length > 0) {
+      const messageIndex = searchResults[currentSearchIndex];
+      const message = messages[messageIndex];
+      
+      if (message) {
+        setTimeout(() => {
+          const element = searchResultsRefs.current.get(message.id);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 100);
+      }
+    }
+  }, [currentSearchIndex, searchResults, messages]);
+
+  // Scroll automático para a última mensagem (apenas quando não está em busca)
+  useEffect(() => {
+    if (!isSearchMode) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isSearchMode]);
 
   // Verificar lembretes periodicamente
   useEffect(() => {
@@ -2510,36 +2616,158 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
     }
   }, [isQuickReplyPopoverOpen]);
 
+  const addAssignmentChangeMessage = (
+    previousAssignment?: { id: string; name: string; avatar: string; type: "user" | "group" },
+    currentAssignment?: { id: string; name: string; avatar: string; type: "user" | "group" }
+  ) => {
+    // Não criar mensagem se não houve mudança
+    if (
+      (!previousAssignment && !currentAssignment) ||
+      (previousAssignment?.id === currentAssignment?.id)
+    ) {
+      return;
+    }
+
+    const assignmentMessage: Message = {
+      id: `assignment-change-${Date.now()}`,
+      sender: "Sistema",
+      content: "",
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      isUser: false,
+      isSummary: true,
+      assignmentChange: {
+        previous: previousAssignment,
+        current: currentAssignment,
+        changedBy: CURRENT_USER.name,
+      },
+    };
+
+    setMessages(prev => {
+      const updatedMessages = [...prev, assignmentMessage];
+      // Salva as mensagens
+      if (conversationId) {
+        saveMessages(conversationId, updatedMessages);
+      }
+      return updatedMessages;
+    });
+
+    // Scroll para o final
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
   const handleAssignUser = (assignmentId: string) => {
     if (!conversation || !onConversationUpdate) return;
     
+    // Guardar atribuição anterior
+    const previousAssignment = conversation.assignedTo
+      ? {
+          id: conversation.assignedTo.id,
+          name: conversation.assignedTo.name,
+          avatar: conversation.assignedTo.avatar,
+          type: (allGroups.some(g => g.id === conversation.assignedTo?.id) ? "group" : "user") as "user" | "group",
+        }
+      : undefined;
+    
     let assignTo = undefined;
+    let currentAssignmentType: "user" | "group" | undefined = undefined;
+    
     if (assignmentId.startsWith("user_")) {
       const userId = assignmentId.replace("user_", "");
       assignTo = allUsers.find(u => u.id === userId);
+      currentAssignmentType = "user";
     } else if (assignmentId.startsWith("group_")) {
       const groupId = assignmentId.replace("group_", "");
       assignTo = allGroups.find(g => g.id === groupId);
+      currentAssignmentType = "group";
     }
     // Se assignmentId === "", assignTo será undefined (não atribuído)
 
-      onConversationUpdate(conversation.id, {
-        assignedTo: assignTo ? {
+    const currentAssignment = assignTo
+      ? {
           id: assignTo.id,
           name: assignTo.name,
           avatar: assignTo.avatar,
-        } : undefined,
-      });
+          type: currentAssignmentType!,
+        }
+      : undefined;
+
+    onConversationUpdate(conversation.id, {
+      assignedTo: assignTo ? {
+        id: assignTo.id,
+        name: assignTo.name,
+        avatar: assignTo.avatar,
+      } : undefined,
+    });
+
+    // Adiciona mensagem no chat sobre a mudança de atribuição
+    addAssignmentChangeMessage(previousAssignment, currentAssignment);
     
     setIsAssignPopoverOpen(false);
+  };
+
+  const addStatusChangeMessage = (
+    previousStatus: "open" | "closed" | "blocked",
+    currentStatus: "open" | "closed" | "blocked"
+  ) => {
+    // Não criar mensagem se não houve mudança
+    if (previousStatus === currentStatus) {
+      return;
+    }
+
+    const getStatusLabel = (status: "open" | "closed" | "blocked") => {
+      switch (status) {
+        case "open":
+          return "aberta";
+        case "closed":
+          return "fechada";
+        case "blocked":
+          return "bloqueada";
+      }
+    };
+
+    const statusMessage: Message = {
+      id: `status-change-${Date.now()}`,
+      sender: "Sistema",
+      content: "",
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      isUser: false,
+      isSummary: true,
+      statusChange: {
+        previous: previousStatus,
+        current: currentStatus,
+        changedBy: CURRENT_USER.name,
+        changedAt: new Date().toISOString(),
+      },
+    };
+
+    setMessages(prev => {
+      const updatedMessages = [...prev, statusMessage];
+      // Salva as mensagens
+      if (conversationId) {
+        saveMessages(conversationId, updatedMessages);
+      }
+      return updatedMessages;
+    });
+
+    // Scroll para o final
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
 
   const handleChangeStatus = (status: "open" | "closed") => {
     if (!conversation || !onConversationUpdate) return;
     
+    const previousStatus = conversation.status;
+    
     onConversationUpdate(conversation.id, {
       status: status,
     });
+    
+    // Adiciona mensagem no chat sobre a mudança de status
+    addStatusChangeMessage(previousStatus, status);
     
     setIsStatusPopoverOpen(false);
   };
@@ -2697,6 +2925,61 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
     <div className="flex-1 flex flex-col bg-white overflow-hidden rounded-2xl shadow-md h-full min-w-0">
       {/* Header */}
       {!isSelectionMode && (
+      <>
+      {isSearchMode ? (
+        <div className="p-4 border-b flex items-center gap-2 flex-shrink-0 min-w-0">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 flex-shrink-0"
+            onClick={closeSearch}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 relative">
+            <Input
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar mensagens..."
+              className="w-full pr-20"
+            />
+            {searchQuery && searchResults.length > 0 && (
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {currentSearchIndex + 1} de {searchResults.length}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => navigateSearch("prev")}
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => navigateSearch("next")}
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 flex-shrink-0"
+            onClick={closeSearch}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
       <div className="p-4 border-b flex items-center justify-between flex-shrink-0 min-w-0">
         <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
           {onBack && (
@@ -2732,11 +3015,30 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
           <h2 
             className="font-semibold text-lg truncate cursor-pointer hover:text-primary transition-colors"
             onClick={() => conversation && setIsConversationDrawerOpen(true)}
+            data-tour="drawer"
           >
             {conversationName}
           </h2>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
+        <div className="flex items-center gap-2 flex-shrink-0 min-w-0" data-tour="chat-header">
+          {/* Botão de Busca */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  onClick={() => setIsSearchMode(true)}
+                  data-tour="search"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Buscar mensagens</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           {/* Botão de Automação */}
           <Popover open={isAutomationPopoverOpen} onOpenChange={setIsAutomationPopoverOpen}>
             <TooltipProvider>
@@ -2800,6 +3102,7 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                           ? 'text-primary hover:bg-primary/10' 
                           : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                       }`}
+                      data-tour="add-tags"
                     >
                       <Tag className="h-4 w-4" />
                     </Button>
@@ -2903,13 +3206,13 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                 <TooltipTrigger asChild>
                   <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
                     {conversation?.assignedTo ? (
-                      <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-slate-300 transition-all">
+                      <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-slate-300 transition-all" data-tour="assign-user">
                         <AvatarFallback className="bg-slate-200 text-slate-700 text-xs">
                           {conversation.assignedTo.avatar}
                         </AvatarFallback>
                       </Avatar>
                     ) : (
-                      <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-slate-300 transition-all border-2 border-dashed border-slate-300">
+                      <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-slate-300 transition-all border-2 border-dashed border-slate-300" data-tour="assign-user">
                         <AvatarFallback className="bg-slate-100 text-slate-400 text-xs">
                           <Users className="h-4 w-4" />
                         </AvatarFallback>
@@ -3028,59 +3331,105 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
         </div>
       </div>
       )}
+      </>
+      )}
 
       {/* Messages Area */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full px-6 pt-6 pb-0">
         <div className="space-y-4">
-          {messages.map((message) => {
+          {filteredMessages.map((message, index) => {
             if (message.isSummary) {
               const isTagMessage = message.id.startsWith("tag-change-");
+              const isAssignmentMessage = message.id.startsWith("assignment-change-");
+              const isStatusMessage = message.id.startsWith("status-change-");
+              
               return (
-                <div key={message.id} className="flex justify-center">
-                  <div className="max-w-[90%] lg:max-w-[80%] w-fit">
-                    <div className="flex items-center gap-2 mb-2 justify-center">
-                      <span className="text-xs font-semibold">{message.sender}</span>
-                    </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg px-5 py-4 border border-slate-200 dark:border-slate-700 w-fit">
-                      {!isTagMessage && (
+                <div key={message.id}>
+                  <div className="flex justify-center">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="max-w-[90%] lg:max-w-[80%] w-fit">
+                            {!isTagMessage && !isAssignmentMessage && !isStatusMessage && (
+                              <div className="flex items-center gap-2 mb-2 justify-center">
+                                <span className="text-xs font-semibold">{message.sender}</span>
+                              </div>
+                            )}
+                            <div className={`${isTagMessage || isAssignmentMessage || isStatusMessage ? 'bg-slate-50 dark:bg-slate-900/50' : 'bg-slate-50 dark:bg-slate-900/50'} rounded-lg ${isTagMessage || isAssignmentMessage || isStatusMessage ? 'px-3 py-2' : 'px-5 py-4'} w-fit`}>
+                      {!isTagMessage && !isAssignmentMessage && !isStatusMessage && (
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Resumo da última conversa</span>
                       </div>
                       )}
-                      {isTagMessage && message.tagChanges ? (
-                        <div className="space-y-3">
-                          {(message.tagChanges.changedBy || message.timestamp) && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400 text-center mb-1">
-                              {message.tagChanges.changedBy && `por ${message.tagChanges.changedBy}`}
-                              {message.tagChanges.changedBy && message.timestamp && " • "}
+                      {isStatusMessage && message.statusChange ? (
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                            <span className="text-xs text-muted-foreground">
+                              Status alterado de <strong>{message.statusChange.previous === "open" ? "aberta" : message.statusChange.previous === "closed" ? "fechada" : "bloqueada"}</strong> para <strong>{message.statusChange.current === "open" ? "aberta" : message.statusChange.current === "closed" ? "fechada" : "bloqueada"}</strong>
+                            </span>
+                          </div>
+                          {(message.statusChange.changedBy || message.timestamp) && (
+                            <p className="text-xs text-muted-foreground">
+                              {message.statusChange.changedBy && `por ${message.statusChange.changedBy}`}
+                              {message.statusChange.changedBy && message.timestamp && " • "}
                               {message.timestamp && message.timestamp}
                             </p>
                           )}
+                        </div>
+                      ) : isAssignmentMessage && message.assignmentChange ? (
+                        <div className="flex flex-col items-center gap-1.5">
+                          {message.assignmentChange.previous && message.assignmentChange.current ? (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                              <span className="text-xs text-muted-foreground">
+                                Atribuição alterada de <strong>{message.assignmentChange.previous.name}</strong> para <strong>{message.assignmentChange.current.name}</strong>
+                              </span>
+                            </div>
+                          ) : message.assignmentChange.current ? (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                              <span className="text-xs text-muted-foreground">
+                                Conversa atribuída a <strong>{message.assignmentChange.current.name}</strong>
+                              </span>
+                            </div>
+                          ) : message.assignmentChange.previous ? (
+                            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                              <span className="text-xs text-muted-foreground">
+                                Atribuição removida de <strong>{message.assignmentChange.previous.name}</strong>
+                              </span>
+                            </div>
+                          ) : null}
+                          {(message.assignmentChange.changedBy || message.timestamp) && (
+                            <p className="text-xs text-muted-foreground">
+                              {message.assignmentChange.changedBy && `por ${message.assignmentChange.changedBy}`}
+                              {message.assignmentChange.changedBy && message.timestamp && " • "}
+                              {message.timestamp && message.timestamp}
+                            </p>
+                          )}
+                        </div>
+                      ) : isTagMessage && message.tagChanges ? (
+                        <div className="flex flex-col items-center gap-1.5">
                           {message.tagChanges.added.length > 0 && (
-                            <div className="flex flex-col items-center">
-                              <p className="text-sm text-slate-700 dark:text-slate-300 mb-2 text-center">
+                            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                              <span className="text-xs text-muted-foreground">
                                 {message.tagChanges.added.length === 1 ? "Etiqueta adicionada:" : "Etiquetas adicionadas:"}
-                              </p>
-                              <div className="flex flex-wrap gap-2 justify-center">
-                                {message.tagChanges.added.map((tag) => (
-                                  <Badge
-                                    key={`added-${tag}`}
-                                    variant="outline"
-                                    className={`text-xs border ${getTagColor(tag)}`}
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
+                              </span>
+                              {message.tagChanges.added.map((tag) => (
+                                <Badge
+                                  key={`added-${tag}`}
+                                  variant="outline"
+                                  className={`text-xs border ${getTagColor(tag)}`}
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
                             </div>
                           )}
                           {message.tagChanges.removed.length > 0 && (
-                            <div className="flex flex-col items-center">
-                              <p className="text-sm text-slate-700 dark:text-slate-300 mb-2 text-center">
+                            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                              <span className="text-xs text-muted-foreground">
                                 {message.tagChanges.removed.length === 1 ? "Etiqueta removida:" : "Etiquetas removidas:"}
-                              </p>
-                              <div className="flex flex-wrap gap-2 justify-center">
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
                                 {message.tagChanges.removed.map((tag) => (
                                   <Badge
                                     key={`removed-${tag}`}
@@ -3093,20 +3442,54 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                               </div>
                             </div>
                           )}
+                          {(message.tagChanges.changedBy || message.timestamp) && (
+                            <p className="text-xs text-muted-foreground">
+                              {message.tagChanges.changedBy && `por ${message.tagChanges.changedBy}`}
+                              {message.tagChanges.changedBy && message.timestamp && " • "}
+                              {message.timestamp && message.timestamp}
+                            </p>
+                          )}
                         </div>
                       ) : (
                       <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                         {message.content}
                       </p>
                       )}
-                    </div>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        {(isTagMessage || isAssignmentMessage || isStatusMessage) && (
+                          <TooltipContent>
+                            <p className="text-xs">Esta notificação é apenas para usuários da Clinia e não é visível para o contato</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               );
             }
             
+            const isSearchMatch = (message as any).isSearchMatch;
+            const originalIndex = messages.findIndex(m => m.id === message.id);
+            const isCurrentSearchResult = searchResults.length > 0 && 
+              currentSearchIndex >= 0 && 
+              originalIndex >= 0 &&
+              searchResults[currentSearchIndex] === originalIndex;
+            
             return (
-              <div key={message.id} data-message-id={message.id} className={`flex items-center gap-1 ${message.isUser ? 'justify-end' : 'justify-start'} group relative`}>
+              <div 
+                key={message.id} 
+                data-message-id={message.id} 
+                ref={(el) => {
+                  if (el && isSearchMatch) {
+                    searchResultsRefs.current.set(message.id, el);
+                  } else {
+                    searchResultsRefs.current.delete(message.id);
+                  }
+                }}
+                className={`flex items-center gap-1 ${message.isUser ? 'justify-end' : 'justify-start'} group relative`}
+              >
                 {/* Checkbox para modo seleção - sempre no lado esquerdo absoluto, alinhado ao centro */}
                 {isSelectionMode && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 flex-shrink-0 z-10">
@@ -3296,7 +3679,18 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                       <p className={`text-sm italic ${message.isUser ? 'text-blue-100' : 'text-muted-foreground'}`}>Mensagem apagada</p>
                     ) : (
                       message.content && (
-                      <p className={`text-sm ${message.image || message.attachment || message.audio || (message.contacts && message.contacts.length > 0) ? 'mb-2' : ''}`}>{message.content}</p>
+                      <p className={`text-sm ${message.image || message.attachment || message.audio || (message.contacts && message.contacts.length > 0) ? 'mb-2' : ''}`}>
+                        {searchQuery && searchQuery.trim().length > 0 && isSearchMatch ? (
+                          <span dangerouslySetInnerHTML={{
+                            __html: message.content.replace(
+                              new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+                              '<mark class="bg-yellow-300 dark:bg-yellow-600 rounded px-0.5">$1</mark>'
+                            )
+                          }} />
+                        ) : (
+                          message.content
+                        )}
+                      </p>
                       )
                     )}
                     
@@ -5770,24 +6164,24 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                   {/* Etiquetas */}
                   <Popover open={isDrawerTagsPopoverOpen} onOpenChange={setIsDrawerTagsPopoverOpen}>
                     <PopoverTrigger asChild>
-                      <div className="cursor-pointer">
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">Etiquetas</h3>
-                    {conversation.tags && conversation.tags.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {conversation.tags.map((tag, index) => (
-                          <Badge 
-                            key={index} 
-                            variant="outline" 
-                            className={`text-xs border ${getTagColor(tag)}`}
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
+                      <div className="cursor-pointer w-fit">
+                        <h3 className="text-sm font-semibold text-muted-foreground mb-2">Etiquetas</h3>
+                        {conversation.tags && conversation.tags.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {conversation.tags.map((tag, index) => (
+                              <Badge 
+                                key={index} 
+                                variant="outline" 
+                                className={`text-xs border cursor-pointer ${getTagColor(tag)}`}
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Nenhuma etiqueta</span>
+                        )}
                       </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">Nenhuma etiqueta</span>
-                    )}
-                  </div>
                     </PopoverTrigger>
                     <PopoverContent className="w-[320px] p-0 max-h-[calc(100vh-120px)] overflow-hidden flex flex-col" align="start" side="bottom" sideOffset={8}>
                       <div className="p-3 flex flex-col">
@@ -5923,7 +6317,7 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                   )}
 
                   {/* Mensagens Favoritas */}
-                  <div>
+                  <div data-tour="favorites">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -5957,11 +6351,15 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                                     const messageElement = document.querySelector(`[data-message-id="${message.id}"]`);
                                     if (messageElement) {
                                       messageElement.scrollIntoView({ behavior: "smooth", block: "center" });
-                                      // Destacar a mensagem temporariamente
-                                      messageElement.classList.add("ring-2", "ring-yellow-400");
-                                      setTimeout(() => {
-                                        messageElement.classList.remove("ring-2", "ring-yellow-400");
-                                      }, 2000);
+                                      // Encontrar a bubble da mensagem dentro do container
+                                      const messageBubble = messageElement.querySelector('.rounded-2xl');
+                                      if (messageBubble) {
+                                        // Destacar apenas a bubble temporariamente com highlight de fundo
+                                        messageBubble.classList.add("highlight-favorite-message");
+                                        setTimeout(() => {
+                                          messageBubble.classList.remove("highlight-favorite-message");
+                                        }, 2000);
+                                      }
                                     }
                                     setIsConversationDrawerOpen(false);
                                   }}
@@ -6166,8 +6564,11 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                       className="w-full justify-start"
                       onClick={() => {
                         if (conversation && onConversationUpdate) {
+                          const previousStatus = conversation.status;
                           const newStatus = conversation.status === "blocked" ? "open" : "blocked";
                           onConversationUpdate(conversation.id, { status: newStatus });
+                          // Adiciona mensagem no chat sobre a mudança de status
+                          addStatusChangeMessage(previousStatus, newStatus);
                           toast.success(
                             newStatus === "blocked" 
                               ? "Contato bloqueado" 

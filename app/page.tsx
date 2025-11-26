@@ -4,14 +4,18 @@ import { useState, useEffect } from "react";
 import { InboxSidebar } from "@/components/inbox/inbox-sidebar";
 import { ConversationListNew } from "@/components/inbox/conversation-list-new";
 import { ChatArea } from "@/components/inbox/chat-area";
-import { loadConversations, saveConversations, deleteConversation } from "@/lib/storage";
+import { OnboardingTour } from "@/components/inbox/onboarding-tour";
+import { loadConversations, saveConversations, deleteConversation, restoreMariaSilva } from "@/lib/storage";
 import { Conversation } from "@/types/inbox";
 import { CURRENT_USER } from "@/lib/user-config";
+import { Button } from "@/components/ui/button";
+import { HelpCircle } from "lucide-react";
 
 export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string>();
   const [activeTab, setActiveTab] = useState("my");
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const [conversationCounts, setConversationCounts] = useState({
     all: 13,
     my: 8,
@@ -30,6 +34,8 @@ export default function Home() {
 
   // Carregar conversas do localStorage na inicialização
   useEffect(() => {
+    // Garantir que a Maria Silva sempre esteja presente
+    restoreMariaSilva();
     const loadedConversations = loadConversations();
     setConversations(loadedConversations);
     
@@ -118,6 +124,18 @@ export default function Home() {
     }
   }, []);
 
+  // Garantir que a Maria Silva sempre esteja presente após carregar
+  useEffect(() => {
+    if (conversations.length > 0) {
+      const hasMariaSilva = conversations.some(c => c.id === "1");
+      if (!hasMariaSilva) {
+        restoreMariaSilva();
+        const reloaded = loadConversations();
+        setConversations(reloaded);
+      }
+    }
+  }, [conversations.length]);
+
   // Salvar conversas no localStorage sempre que houver mudanças
   useEffect(() => {
     if (conversations.length > 0) {
@@ -138,20 +156,55 @@ export default function Home() {
     }
   }, [selectedConversationId]);
 
-  const selectedConversation = conversations.find(
+  // Garantir que a Maria Silva sempre esteja presente antes de usar as conversas
+  const conversationsWithMaria = (() => {
+    const hasMariaSilva = conversations.some(c => c.id === "1");
+    if (!hasMariaSilva) {
+      restoreMariaSilva();
+      const reloaded = loadConversations();
+      // Atualizar o estado também
+      if (reloaded.length !== conversations.length || !conversations.some(c => c.id === "1")) {
+        setConversations(reloaded);
+      }
+      return reloaded;
+    }
+    // Garantir que a Maria Silva tenha status "open" para aparecer na aba "all"
+    const mariaIndex = conversations.findIndex(c => c.id === "1");
+    if (mariaIndex !== -1 && conversations[mariaIndex].status !== "open") {
+      const updated = conversations.map((conv, idx) => 
+        idx === mariaIndex ? { ...conv, status: "open" as const } : conv
+      );
+      setConversations(updated);
+      return updated;
+    }
+    return conversations;
+  })();
+
+  const selectedConversation = conversationsWithMaria.find(
     (c) => c.id === selectedConversationId
   );
 
   const handleConversationDelete = (conversationIds: string[]) => {
+    // Não permitir deletar a Maria Silva (ID "1")
+    const filteredIds = conversationIds.filter(id => id !== "1");
+    if (filteredIds.length === 0) return;
+    
     // Deletar do localStorage também
-    conversationIds.forEach(id => {
+    filteredIds.forEach(id => {
       deleteConversation(id);
     });
     
     setConversations((prev) => {
-      const updated = prev.filter((conv) => !conversationIds.includes(conv.id));
+      const updated = prev.filter((conv) => !filteredIds.includes(conv.id));
+      // Garantir que a Maria Silva sempre esteja presente
+      const hasMariaSilva = updated.some(c => c.id === "1");
+      if (!hasMariaSilva) {
+        restoreMariaSilva();
+        const reloaded = loadConversations();
+        return reloaded;
+      }
       // Se a conversa selecionada foi deletada, limpar seleção
-      if (conversationIds.includes(selectedConversationId || "")) {
+      if (filteredIds.includes(selectedConversationId || "")) {
         setSelectedConversationId(undefined);
       }
       return updated;
@@ -203,16 +256,41 @@ export default function Home() {
     }
   };
 
+  // Verificar se deve iniciar o tour via URL
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("tour") === "true") {
+        setIsTourOpen(true);
+      }
+    }
+  }, []);
+
   return (
-    <div className="flex h-screen overflow-hidden bg-sidebar p-2 gap-2">
-      {/* Sidebar - oculta em mobile */}
-      <div className="hidden lg:flex">
-        <InboxSidebar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab}
-          counts={conversationCounts}
-        />
-      </div>
+    <>
+      <OnboardingTour isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+      
+      {/* Botão flutuante para iniciar o tour */}
+      {!isTourOpen && (
+        <Button
+          onClick={() => setIsTourOpen(true)}
+          className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg"
+          size="icon"
+          variant="default"
+        >
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+      )}
+      
+      <div className="flex h-screen overflow-hidden bg-sidebar p-2 gap-2">
+        {/* Sidebar - oculta em mobile */}
+        <div className="hidden lg:flex" data-tour="sidebar">
+          <InboxSidebar 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab}
+            counts={conversationCounts}
+          />
+        </div>
       
       {/* Lista de conversas - oculta quando conversa está selecionada em mobile */}
       <div className={`${selectedConversationId ? 'hidden md:block' : 'block'}`}>
@@ -221,7 +299,7 @@ export default function Home() {
           onSelect={setSelectedConversationId}
           activeTab={activeTab}
           onCountsChange={setConversationCounts}
-          conversations={conversations}
+          conversations={conversationsWithMaria}
           onConversationUpdate={handleConversationUpdate}
           onConversationDelete={handleConversationDelete}
           onConversationAdd={handleConversationAdd}
@@ -239,6 +317,7 @@ export default function Home() {
           onNavigateToConversation={handleNavigateToConversation}
         />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

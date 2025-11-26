@@ -17,13 +17,13 @@ import {
   Trash2,
   Download,
   MessageSquarePlus,
-  MessageCircle,
-  Camera,
   X,
   Tag,
+  Tags,
   UserPlus,
   CircleDot,
 } from "lucide-react";
+import { WhatsAppIcon, InstagramIcon, FacebookIcon } from "@/components/ui/social-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,9 +66,10 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { mockConversations } from "@/lib/mock-data";
-import { Conversation } from "@/types/inbox";
+import { Conversation, Message } from "@/types/inbox";
 import { toast } from "sonner";
 import { CURRENT_USER } from "@/lib/user-config";
+import { loadMessages } from "@/lib/storage";
 
 interface ConversationListProps {
   selectedId?: string;
@@ -153,9 +154,20 @@ export function ConversationListNew({
   const [filterUsers, setFilterUsers] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const [localConversations, setLocalConversations] = useState<Conversation[]>(mockConversations);
+  const [allMessages, setAllMessages] = useState<Record<string, Message[]>>({});
   
   // Usa conversas externas se fornecidas, senão usa as locais
   const conversations = externalConversations || localConversations;
+
+  // Carregar mensagens quando houver busca
+  useEffect(() => {
+    if (searchQuery && searchQuery.trim().length > 0) {
+      const messages = loadMessages();
+      setAllMessages(messages);
+    } else {
+      setAllMessages({});
+    }
+  }, [searchQuery]);
   const [isAssignTagOpen, setIsAssignTagOpen] = useState(false);
   const [selectedTagsToAssign, setSelectedTagsToAssign] = useState<string[]>([]);
   const [isAssignUserOpen, setIsAssignUserOpen] = useState(false);
@@ -226,13 +238,25 @@ export function ConversationListNew({
     if (activeTab === "unassigned" && (conv.assignedTo || conv.status !== "open")) return false;
     if (activeTab === "groups") return false; // TODO: adicionar lógica de grupos
 
-    // Filtro de busca
-    if (
-      searchQuery &&
-      !conv.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false;
+    // Filtro de busca - busca no nome, última mensagem e conteúdo de todas as mensagens
+    if (searchQuery && searchQuery.trim().length > 0) {
+      const queryLower = searchQuery.toLowerCase();
+      const matchesName = conv.name.toLowerCase().includes(queryLower);
+      const matchesLastMessage = conv.lastMessage.toLowerCase().includes(queryLower);
+      
+      // Buscar no conteúdo das mensagens da conversa
+      let matchesMessageContent = false;
+      if (Object.keys(allMessages).length > 0 && allMessages[conv.id]) {
+        matchesMessageContent = allMessages[conv.id].some((msg: Message) => {
+          // Buscar no conteúdo da mensagem (ignorar mensagens do sistema/resumo)
+          if (msg.isSummary || msg.deletedForEveryone) return false;
+          return msg.content.toLowerCase().includes(queryLower);
+        });
+      }
+      
+      if (!matchesName && !matchesLastMessage && !matchesMessageContent) {
+        return false;
+      }
     }
 
     // Filtro de status (multiselect)
@@ -730,7 +754,7 @@ export function ConversationListNew({
                     </div>
 
                     {/* Quick Filters Pills */}
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2" data-tour="conversation-filters">
                       <Badge
                         onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
                         className={`h-7 px-3 text-xs cursor-pointer transition-all ${
@@ -1289,7 +1313,7 @@ export function ConversationListNew({
         </div>
 
         {/* Lista de Conversas */}
-        <ScrollArea className="flex-1 overflow-auto">
+        <ScrollArea className="flex-1 overflow-auto" data-tour="conversation-list">
           <div className="space-y-0 min-h-full">
             {sortedConversations.map((conversation) => (
               <ConversationCard
@@ -1389,18 +1413,22 @@ function ConversationCard({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white flex items-center justify-center border shadow-sm">
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center overflow-hidden">
                       {conversation.channel === "whatsapp" ? (
-                        <MessageCircle className="h-3 w-3 text-green-600" />
+                        <WhatsAppIcon size={20} />
+                      ) : conversation.channel === "instagram" ? (
+                        <InstagramIcon size={20} />
                       ) : (
-                        <Camera className="h-3 w-3 text-pink-600" />
+                        <FacebookIcon size={20} />
                       )}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     {conversation.channel === "whatsapp"
                       ? "WhatsApp"
-                      : "Instagram"}
+                      : conversation.channel === "instagram"
+                      ? "Instagram"
+                      : "Facebook"}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -1442,24 +1470,47 @@ function ConversationCard({
 
               {/* Tags */}
               {conversation.tags.length > 0 && (
-                <div className="flex items-center gap-1 mt-1">
-                  {conversation.tags.map((tag) => (
-                    <TooltipProvider key={tag}>
+                <div className="flex items-center gap-1 mt-1" data-tour="tags">
+                  {conversation.tags.length === 1 ? (
+                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
                           <Badge
                             variant="outline"
                             className={`text-xs h-5 px-1.5 cursor-default ${
-                              tagColors[tag] || "bg-gray-100 text-gray-800 border-gray-200"
+                              tagColors[conversation.tags[0]] || "bg-gray-100 text-gray-800 border-gray-200"
                             }`}
                           >
-                            {tag}
+                            {conversation.tags[0]}
                           </Badge>
                         </TooltipTrigger>
-                        <TooltipContent>{tag}</TooltipContent>
+                        <TooltipContent>{conversation.tags[0]}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  ))}
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Tags className="h-4 w-4 text-gray-600 cursor-pointer" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right" sideOffset={8} className="p-3">
+                          <div className="flex flex-col gap-1">
+                            {conversation.tags.map((tag) => (
+                              <Badge
+                                key={tag}
+                                variant="outline"
+                                className={`text-xs ${
+                                  tagColors[tag] || "bg-gray-100 text-gray-800 border-gray-200"
+                                }`}
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               )}
             </div>

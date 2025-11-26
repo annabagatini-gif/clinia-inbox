@@ -1,5 +1,6 @@
 import { Conversation, Message } from "@/types/inbox";
 import { mockConversations, mockMessages } from "@/lib/mock-data";
+import { CURRENT_USER } from "@/lib/user-config";
 
 const STORAGE_KEYS = {
   CONVERSATIONS: "clinia-inbox-conversations",
@@ -30,6 +31,7 @@ export function loadConversations(): Conversation[] {
             ...mock,
             ...saved,
             // Sempre usar campos novos dos mockados se existirem (para garantir atualizações)
+            channel: mock.channel, // Sempre usar o channel dos mockados
             phone: mock.phone || saved.phone,
             callHistory: mock.callHistory || saved.callHistory,
             appointments: mock.appointments || saved.appointments,
@@ -44,13 +46,65 @@ export function loadConversations(): Conversation[] {
         (c) => !storedIds.has(c.id)
       );
       
-      return [...merged, ...newMockConversations];
+      const result = [...merged, ...newMockConversations];
+      
+      // Garantir que a conversa da Maria Silva (ID "1") sempre esteja presente e atribuída ao usuário atual
+      const mariaSilvaIndex = result.findIndex(c => c.id === "1");
+      if (mariaSilvaIndex === -1) {
+        const mariaSilva = mockConversations.find(c => c.id === "1");
+        if (mariaSilva) {
+          result.unshift({
+            ...mariaSilva,
+            status: "open",
+            assignedTo: {
+              id: CURRENT_USER.id,
+              name: CURRENT_USER.name,
+              avatar: CURRENT_USER.avatar,
+            },
+          });
+        }
+      } else {
+        // Garantir que está atribuída ao usuário atual e tem status "open"
+        const mariaSilva = result[mariaSilvaIndex];
+        if (mariaSilva.assignedTo?.id !== CURRENT_USER.id || mariaSilva.status !== "open") {
+          result[mariaSilvaIndex] = {
+            ...mariaSilva,
+            status: "open",
+            assignedTo: {
+              id: CURRENT_USER.id,
+              name: CURRENT_USER.name,
+              avatar: CURRENT_USER.avatar,
+            },
+          };
+        }
+      }
+      
+      return result;
     }
   } catch (error) {
     console.error("Erro ao carregar conversas do localStorage:", error);
   }
 
-  return mockConversations;
+  // Garantir que a Maria Silva sempre esteja presente mesmo quando não há localStorage
+  const result = [...mockConversations];
+  const mariaSilvaIndex = result.findIndex(c => c.id === "1");
+  if (mariaSilvaIndex !== -1) {
+    // Garantir que está atribuída ao usuário atual e tem status "open"
+    const mariaSilva = result[mariaSilvaIndex];
+    if (mariaSilva.assignedTo?.id !== CURRENT_USER.id || mariaSilva.status !== "open") {
+      result[mariaSilvaIndex] = {
+        ...mariaSilva,
+        status: "open",
+        assignedTo: {
+          id: CURRENT_USER.id,
+          name: CURRENT_USER.name,
+          avatar: CURRENT_USER.avatar,
+        },
+      };
+    }
+  }
+  
+  return result;
 }
 
 /**
@@ -60,7 +114,41 @@ export function saveConversations(conversations: Conversation[]): void {
   if (typeof window === "undefined") return;
 
   try {
-    localStorage.setItem(STORAGE_KEYS.CONVERSATIONS, JSON.stringify(conversations));
+    // Garantir que a Maria Silva sempre esteja presente ao salvar com status "open"
+    const hasMariaSilva = conversations.some(c => c.id === "1");
+    let conversationsToSave = conversations;
+    
+    if (!hasMariaSilva) {
+      const mariaSilva = mockConversations.find(c => c.id === "1");
+      if (mariaSilva) {
+        conversationsToSave = [{
+          ...mariaSilva,
+          status: "open",
+          assignedTo: {
+            id: CURRENT_USER.id,
+            name: CURRENT_USER.name,
+            avatar: CURRENT_USER.avatar,
+          },
+        }, ...conversations];
+      }
+    } else {
+      // Garantir que a Maria Silva tenha status "open" ao salvar
+      conversationsToSave = conversations.map((conv) =>
+        conv.id === "1"
+          ? {
+              ...conv,
+              status: "open",
+              assignedTo: {
+                id: CURRENT_USER.id,
+                name: CURRENT_USER.name,
+                avatar: CURRENT_USER.avatar,
+              },
+            }
+          : conv
+      );
+    }
+    
+    localStorage.setItem(STORAGE_KEYS.CONVERSATIONS, JSON.stringify(conversationsToSave));
   } catch (error) {
     console.error("Erro ao salvar conversas no localStorage:", error);
   }
@@ -124,6 +212,12 @@ export function deleteConversation(conversationId: string): void {
   if (typeof window === "undefined") return;
 
   try {
+    // Não permitir deletar a conversa da Maria Silva (ID "1")
+    if (conversationId === "1") {
+      console.warn("Não é possível deletar a conversa da Maria Silva (conversa de demonstração)");
+      return;
+    }
+
     // Remover conversa
     const conversations = loadConversations();
     const filtered = conversations.filter((c) => c.id !== conversationId);
@@ -149,6 +243,57 @@ export function clearStorage(): void {
     localStorage.removeItem(STORAGE_KEYS.MESSAGES);
   } catch (error) {
     console.error("Erro ao limpar localStorage:", error);
+  }
+}
+
+/**
+ * Restaura a conversa da Maria Silva caso ela tenha sido deletada
+ */
+export function restoreMariaSilva(): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    const conversations = loadConversations();
+    const mariaSilvaIndex = conversations.findIndex(c => c.id === "1");
+    
+    if (mariaSilvaIndex === -1) {
+      // Se não existe, adiciona atribuída ao usuário atual com status "open"
+      const mariaSilva = mockConversations.find(c => c.id === "1");
+      if (mariaSilva) {
+        const mariaSilvaWithUser: Conversation = {
+          ...mariaSilva,
+          status: "open" as const,
+          assignedTo: {
+            id: CURRENT_USER.id,
+            name: CURRENT_USER.name,
+            avatar: CURRENT_USER.avatar,
+          },
+        };
+        const updated = [mariaSilvaWithUser, ...conversations];
+        saveConversations(updated);
+      }
+    } else {
+      // Se existe, garante que está atribuída ao usuário atual e tem status "open"
+      const mariaSilva = conversations[mariaSilvaIndex];
+      if (mariaSilva.assignedTo?.id !== CURRENT_USER.id || mariaSilva.status !== "open") {
+        const updated: Conversation[] = conversations.map((conv) =>
+          conv.id === "1"
+            ? {
+                ...conv,
+                status: "open" as const,
+                assignedTo: {
+                  id: CURRENT_USER.id,
+                  name: CURRENT_USER.name,
+                  avatar: CURRENT_USER.avatar,
+                },
+              }
+            : conv
+        );
+        saveConversations(updated);
+      }
+    }
+  } catch (error) {
+    console.error("Erro ao restaurar Maria Silva:", error);
   }
 }
 
