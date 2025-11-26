@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Smile, Paperclip, ArrowUp, Zap, ArrowLeft, Users, Check, CheckCheck, ChevronLeft, Bot, Sparkles, Mic, FileText, MessageSquare, FileText as FileTextIcon, Search, RotateCcw, Plus, X, Image, Video, User, Pause, Play, ExternalLink, MoreVertical, Star, Forward, Trash2, Reply, Copy, CheckSquare, AlertTriangle, WifiOff, AlertCircle, Square, Languages } from "lucide-react";
+import { Smile, Paperclip, ArrowUp, Zap, ArrowLeft, Users, Check, CheckCheck, ChevronLeft, ChevronDown, ChevronUp, Bot, Sparkles, Mic, FileText, MessageSquare, FileText as FileTextIcon, Search, RotateCcw, Plus, X, Image, Video, User, Pause, Play, ExternalLink, MoreVertical, Star, Forward, Trash2, Reply, Copy, CheckSquare, AlertTriangle, WifiOff, AlertCircle, Square, Languages, Pencil, Phone, Calendar, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Tag, Ban, Shield, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,6 +48,16 @@ import { toast } from "sonner";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { AnnotationsDrawer } from "@/components/inbox/annotations-drawer";
 import { canUserRespond, CURRENT_USER, isConversationAssignedToMe } from "@/lib/user-config";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -76,6 +86,64 @@ const allGroups = [
   { id: "group1", name: "Suporte Técnico", avatar: "ST" },
   { id: "group2", name: "Vendas", avatar: "VD" },
   { id: "group3", name: "Financeiro", avatar: "FN" },
+];
+
+// Lista de automações disponíveis
+const availableAutomations = [
+  {
+    id: "auto1",
+    name: "Boas-vindas",
+    description: "Envia mensagem de boas-vindas quando o contato envia 'olá' ou 'oi'",
+    trigger: ["olá", "oi", "ola", "bom dia", "boa tarde", "boa noite"],
+    message: "Olá! Bem-vindo(a) à nossa empresa. Como posso ajudá-lo(a) hoje?",
+  },
+  {
+    id: "auto2",
+    name: "Informações de Horário",
+    description: "Responde automaticamente sobre horário de funcionamento",
+    trigger: ["horário", "horario", "funcionamento", "aberto", "fechado"],
+    message: "Nosso horário de funcionamento é de segunda a sexta, das 8h às 18h.",
+  },
+  {
+    id: "auto3",
+    name: "Informações de Contato",
+    description: "Fornece informações de contato quando solicitado",
+    trigger: ["telefone", "contato", "email", "endereço", "endereco"],
+    message: "Você pode nos contatar pelo telefone (11) 1234-5678 ou pelo email contato@empresa.com",
+  },
+  {
+    id: "auto4",
+    name: "Agradecimento",
+    description: "Agradece quando o contato diz 'obrigado' ou 'obrigada'",
+    trigger: ["obrigado", "obrigada", "valeu", "agradeço"],
+    message: "De nada! Fico feliz em ajudar. Se precisar de mais alguma coisa, estou à disposição!",
+  },
+  {
+    id: "auto5",
+    name: "Suporte Técnico",
+    description: "Oferece ajuda técnica quando detecta palavras relacionadas a problemas",
+    trigger: ["problema", "erro", "não funciona", "bug", "travou"],
+    message: "Entendo que você está com um problema técnico. Nossa equipe de suporte vai te ajudar!",
+  },
+];
+
+// Lista de etiquetas disponíveis
+const allTags = [
+  "Urgente",
+  "Pagamento",
+  "Pedido",
+  "Suporte",
+  "Bug",
+  "Feedback",
+  "Dúvida",
+  "Reclamação",
+  "Elogio",
+  "Renovação",
+  "Cancelamento",
+  "Integração",
+  "Treinamento",
+  "Documentação",
+  "Cotação",
 ];
 
 // Modelos de mensagem disponíveis
@@ -520,11 +588,27 @@ function AudioPlayer({
       setIsPlaying(false);
     };
     const handleError = (e: Event) => {
-      console.error("Erro no elemento de áudio:", e);
       setIsPlaying(false);
-      const error = (e.target as HTMLAudioElement).error;
-      if (error) {
-        console.error("Código de erro:", error.code, "Mensagem:", error.message);
+      try {
+        const audioElement = e.target as HTMLAudioElement;
+        if (audioElement?.error) {
+          const error = audioElement.error;
+          if (error.code !== null && error.code !== undefined) {
+            const errorMessages: Record<number, string> = {
+              1: "MEDIA_ERR_ABORTED - A reprodução foi abortada",
+              2: "MEDIA_ERR_NETWORK - Ocorreu um erro de rede",
+              3: "MEDIA_ERR_DECODE - Ocorreu um erro ao decodificar o áudio",
+              4: "MEDIA_ERR_SRC_NOT_SUPPORTED - O formato do áudio não é suportado"
+            };
+            const errorMessage = errorMessages[error.code] || `Erro desconhecido (código: ${error.code})`;
+            console.warn("Erro no elemento de áudio:", errorMessage);
+          } else if (error.message) {
+            console.warn("Erro no elemento de áudio:", error.message);
+          }
+        }
+      } catch (err) {
+        // Silenciosamente ignora erros no tratamento de erros para evitar loops
+        console.warn("Não foi possível processar o erro do áudio");
       }
     };
     const handleLoadedMetadata = () => {
@@ -648,10 +732,57 @@ function AudioPlayer({
   );
 }
 
+// Função para obter a cor da etiqueta
+function getTagColor(tag: string): string {
+  const tagColors: Record<string, string> = {
+    "Urgente": "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
+    "Pagamento": "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800",
+    "Pedido": "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+    "Suporte": "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
+    "Bug": "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800",
+  };
+  
+  return tagColors[tag] || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800";
+}
+
 export function ChatArea({ conversationId, conversationName, conversation, onBack, onConversationUpdate, onNavigateToConversation }: ChatAreaProps) {
   const [isAssignPopoverOpen, setIsAssignPopoverOpen] = useState(false);
   const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
   const [isAutomationPopoverOpen, setIsAutomationPopoverOpen] = useState(false);
+  const [isTagsPopoverOpen, setIsTagsPopoverOpen] = useState(false);
+  const [isDrawerTagsPopoverOpen, setIsDrawerTagsPopoverOpen] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [drawerSelectedTags, setDrawerSelectedTags] = useState<string[]>([]);
+  const [isConversationDrawerOpen, setIsConversationDrawerOpen] = useState(false);
+  const [isEditingContactName, setIsEditingContactName] = useState(false);
+  const [editedContactName, setEditedContactName] = useState("");
+  const [contactObservations, setContactObservations] = useState("");
+  const isSavingNameRef = useRef(false);
+  const [isCreateAppointmentOpen, setIsCreateAppointmentOpen] = useState(false);
+  const [isEditAppointmentOpen, setIsEditAppointmentOpen] = useState(false);
+  const [editingAppointmentId, setEditingAppointmentId] = useState<string | null>(null);
+  const [isCreateAutomationOpen, setIsCreateAutomationOpen] = useState(false);
+  const [selectedAutomationId, setSelectedAutomationId] = useState<string>("");
+  const [expandedAutomationId, setExpandedAutomationId] = useState<string | null>(null);
+  const [newAppointmentTitle, setNewAppointmentTitle] = useState("");
+  const [newAppointmentDate, setNewAppointmentDate] = useState("");
+  const [newAppointmentTime, setNewAppointmentTime] = useState("");
+  const [newAppointmentAgreement, setNewAppointmentAgreement] = useState("");
+  const [newAppointmentProfessional, setNewAppointmentProfessional] = useState("");
+  const [newAppointmentLocation, setNewAppointmentLocation] = useState("");
+  const [newAppointmentService, setNewAppointmentService] = useState("");
+  const [isCallHistoryExpanded, setIsCallHistoryExpanded] = useState(true);
+  const [isAutomationsExpanded, setIsAutomationsExpanded] = useState(true);
+  const [isAppointmentsExpanded, setIsAppointmentsExpanded] = useState(true);
+  const [isFavoriteMessagesExpanded, setIsFavoriteMessagesExpanded] = useState(true);
+
+  // Inicializa o nome editado e observações quando a drawer abrir
+  useEffect(() => {
+    if (isConversationDrawerOpen && conversation) {
+      setEditedContactName(conversation.name);
+      setContactObservations(conversation.observations || "");
+    }
+  }, [isConversationDrawerOpen, conversation]);
   const [isMessageTemplatePopoverOpen, setIsMessageTemplatePopoverOpen] = useState(false);
   const [isTemplatePreviewOpen, setIsTemplatePreviewOpen] = useState(false);
   const [isRewritePopoverOpen, setIsRewritePopoverOpen] = useState(false);
@@ -1525,7 +1656,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
     navigator.clipboard.writeText(textToCopy);
     toast.success("Mensagem copiada!", {
       duration: 2000,
-      closeButton: false,
     });
   };
 
@@ -1560,7 +1690,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
       setShowFullEmojiPicker(false);
       toast.success("Reação adicionada!", {
         duration: 2000,
-        closeButton: false,
       });
     }
   };
@@ -1578,7 +1707,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
     );
     toast.success("Reação removida!", {
       duration: 2000,
-      closeButton: false,
     });
   };
 
@@ -1674,7 +1802,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
         : `${count} mensagens excluídas para todos`,
       {
         duration: 2000,
-        closeButton: false,
       }
     );
   };
@@ -1730,7 +1857,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
           : `${count} mensagens desfavoritadas`,
         {
           duration: 2000,
-          closeButton: false,
         }
       );
     } else {
@@ -1747,7 +1873,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
           : `${count} mensagens favoritadas`,
         {
           duration: 2000,
-          closeButton: false,
         }
       );
     }
@@ -1774,7 +1899,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
           : `${count} mensagens excluídas`,
         {
           duration: 2000,
-          closeButton: false,
         }
       );
     }
@@ -1810,7 +1934,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
         : `${count} mensagens encaminhadas para ${contactNames}`,
       {
         duration: 2000,
-        closeButton: false,
       }
     );
     
@@ -2411,6 +2534,116 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
     setIsStatusPopoverOpen(false);
   };
 
+  // Sincroniza as tags selecionadas com as tags da conversa quando o popover abrir
+  useEffect(() => {
+    if (isTagsPopoverOpen && conversation) {
+      setSelectedTags(conversation.tags || []);
+    }
+  }, [isTagsPopoverOpen, conversation]);
+
+  // Sincroniza as tags selecionadas na drawer quando o popover abrir
+  useEffect(() => {
+    if (isDrawerTagsPopoverOpen && conversation) {
+      setDrawerSelectedTags(conversation.tags || []);
+    }
+  }, [isDrawerTagsPopoverOpen, conversation]);
+
+  const addTagChangeMessage = (oldTags: string[], newTags: string[]) => {
+    const addedTags = newTags.filter(tag => !oldTags.includes(tag));
+    const removedTags = oldTags.filter(tag => !newTags.includes(tag));
+    
+    if (addedTags.length === 0 && removedTags.length === 0) return;
+    
+    let messageContent = "";
+    if (addedTags.length > 0 && removedTags.length > 0) {
+      const addedText = addedTags.length === 1 
+        ? `"${addedTags[0]}" adicionada` 
+        : `${addedTags.map(tag => `"${tag}"`).join(", ")} adicionadas`;
+      const removedText = removedTags.length === 1
+        ? `"${removedTags[0]}" removida`
+        : `${removedTags.map(tag => `"${tag}"`).join(", ")} removidas`;
+      messageContent = `Etiquetas atualizadas: ${addedText}, ${removedText}.`;
+    } else if (addedTags.length > 0) {
+      if (addedTags.length === 1) {
+        messageContent = `Etiqueta adicionada: "${addedTags[0]}".`;
+      } else {
+        messageContent = `Etiquetas adicionadas: ${addedTags.map(tag => `"${tag}"`).join(", ")}.`;
+      }
+    } else if (removedTags.length > 0) {
+      if (removedTags.length === 1) {
+        messageContent = `Etiqueta removida: "${removedTags[0]}".`;
+      } else {
+        messageContent = `Etiquetas removidas: ${removedTags.map(tag => `"${tag}"`).join(", ")}.`;
+      }
+    }
+    
+    const tagMessage: Message = {
+      id: `tag-change-${Date.now()}`,
+      sender: "Sistema",
+      content: messageContent,
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      isUser: false,
+      isSummary: true,
+      tagChanges: {
+        added: addedTags,
+        removed: removedTags,
+        changedBy: CURRENT_USER.name,
+      },
+    };
+    
+    setMessages(prev => {
+      const updatedMessages = [...prev, tagMessage];
+      // Salva as mensagens
+      if (conversationId) {
+        saveMessages(conversationId, updatedMessages);
+      }
+      return updatedMessages;
+    });
+    
+    // Scroll para o final
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  const handleToggleTag = (tag: string) => {
+    if (!conversation || !onConversationUpdate) return;
+    
+    const oldTags = [...selectedTags];
+    const newTags = selectedTags.includes(tag)
+      ? selectedTags.filter(t => t !== tag)
+      : [...selectedTags, tag];
+    
+    setSelectedTags(newTags);
+    
+    // Salva imediatamente, como na interface de atribuir usuários
+    onConversationUpdate(conversation.id, {
+      tags: newTags,
+    });
+    
+    // Adiciona mensagem no chat sobre a mudança de etiquetas
+    addTagChangeMessage(oldTags, newTags);
+  };
+
+  const handleToggleDrawerTag = (tag: string) => {
+    if (!conversation || !onConversationUpdate) return;
+    
+    const oldTags = [...drawerSelectedTags];
+    const newTags = drawerSelectedTags.includes(tag)
+      ? drawerSelectedTags.filter(t => t !== tag)
+      : [...drawerSelectedTags, tag];
+    
+    setDrawerSelectedTags(newTags);
+    
+    // Salva imediatamente
+    onConversationUpdate(conversation.id, {
+      tags: newTags,
+    });
+    
+    // Adiciona mensagem no chat sobre a mudança de etiquetas
+    addTagChangeMessage(oldTags, newTags);
+  };
+
   const handleToggleAutomation = (enabled: boolean) => {
     if (!conversation || !onConversationUpdate) return;
     
@@ -2486,7 +2719,12 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
               </AvatarFallback>
             </Avatar>
           )}
-          <h2 className="font-semibold text-lg truncate">{conversationName}</h2>
+          <h2 
+            className="font-semibold text-lg truncate cursor-pointer hover:text-primary transition-colors"
+            onClick={() => conversation && setIsConversationDrawerOpen(true)}
+          >
+            {conversationName}
+          </h2>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
           {/* Botão de Automação */}
@@ -2534,6 +2772,68 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                     ? "Automação ativada para esta conversa"
                     : "Ative para habilitar respostas automáticas"}
                 </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Botão de Etiquetas */}
+          <Popover open={isTagsPopoverOpen} onOpenChange={setIsTagsPopoverOpen}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`h-8 w-8 ${
+                        conversation?.tags && conversation.tags.length > 0
+                          ? 'text-primary hover:bg-primary/10' 
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <Tag className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {conversation?.tags && conversation.tags.length > 0
+                    ? `${conversation.tags.length} etiqueta(s) - Clique para gerenciar`
+                    : "Adicionar etiquetas"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <PopoverContent className="w-[320px] p-0 max-h-[calc(100vh-120px)] overflow-hidden flex flex-col" align="end">
+              <div className="p-3 flex flex-col">
+                <h4 className="text-sm font-semibold mb-2">Gerenciar etiquetas</h4>
+                <div className="space-y-2.5">
+                  {/* Seção de Etiquetas */}
+                  <div>
+                    <h5 className="text-xs font-medium mb-1.5 text-muted-foreground">Etiquetas</h5>
+                    <ScrollArea className="h-[300px] border rounded-md p-1.5">
+                      <div className="space-y-1">
+                        {allTags.map((tag) => (
+                          <div
+                            key={tag}
+                            className="group flex items-center justify-between gap-2 py-1 px-1.5 rounded-md hover:bg-muted cursor-pointer"
+                            onClick={() => handleToggleTag(tag)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${getTagColor(tag)}`}
+                              >
+                                {tag}
+                              </Badge>
+                            </div>
+                            {selectedTags.includes(tag) && (
+                              <Check className="h-4 w-4 text-primary" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
               </div>
             </PopoverContent>
           </Popover>
@@ -2725,19 +3025,70 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
         <div className="space-y-4">
           {messages.map((message) => {
             if (message.isSummary) {
+              const isTagMessage = message.id.startsWith("tag-change-");
               return (
                 <div key={message.id} className="flex justify-center">
-                  <div className="max-w-[90%] lg:max-w-[80%] w-full">
+                  <div className="max-w-[90%] lg:max-w-[80%] w-fit">
                     <div className="flex items-center gap-2 mb-2 justify-center">
                       <span className="text-xs font-semibold">{message.sender}</span>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg px-5 py-4 border border-slate-200 dark:border-slate-700">
+                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg px-5 py-4 border border-slate-200 dark:border-slate-700 w-fit">
+                      {!isTagMessage && (
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Resumo da última conversa</span>
                       </div>
+                      )}
+                      {isTagMessage && message.tagChanges ? (
+                        <div className="space-y-3">
+                          {(message.tagChanges.changedBy || message.timestamp) && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 text-center mb-1">
+                              {message.tagChanges.changedBy && `por ${message.tagChanges.changedBy}`}
+                              {message.tagChanges.changedBy && message.timestamp && " • "}
+                              {message.timestamp && message.timestamp}
+                            </p>
+                          )}
+                          {message.tagChanges.added.length > 0 && (
+                            <div className="flex flex-col items-center">
+                              <p className="text-sm text-slate-700 dark:text-slate-300 mb-2 text-center">
+                                {message.tagChanges.added.length === 1 ? "Etiqueta adicionada:" : "Etiquetas adicionadas:"}
+                              </p>
+                              <div className="flex flex-wrap gap-2 justify-center">
+                                {message.tagChanges.added.map((tag) => (
+                                  <Badge
+                                    key={`added-${tag}`}
+                                    variant="outline"
+                                    className={`text-xs border ${getTagColor(tag)}`}
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {message.tagChanges.removed.length > 0 && (
+                            <div className="flex flex-col items-center">
+                              <p className="text-sm text-slate-700 dark:text-slate-300 mb-2 text-center">
+                                {message.tagChanges.removed.length === 1 ? "Etiqueta removida:" : "Etiquetas removidas:"}
+                              </p>
+                              <div className="flex flex-wrap gap-2 justify-center">
+                                {message.tagChanges.removed.map((tag) => (
+                                  <Badge
+                                    key={`removed-${tag}`}
+                                    variant="outline"
+                                    className={`text-xs border ${getTagColor(tag)} opacity-50`}
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
                       <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                         {message.content}
                       </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -5192,7 +5543,6 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
                   setShowFullEmojiPicker(false);
                   toast.success("Reação adicionada!", {
                     duration: 2000,
-                    closeButton: false,
                   });
                 }
               }}
@@ -5278,6 +5628,1067 @@ export function ChatArea({ conversationId, conversationName, conversation, onBac
               }}
             >
               Sim, atribuir a mim
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drawer de Informações do Contato */}
+      <Sheet open={isConversationDrawerOpen} onOpenChange={(open) => {
+        setIsConversationDrawerOpen(open);
+        if (!open) {
+          setIsEditingContactName(false);
+          setEditedContactName("");
+        }
+      }}>
+        <SheetContent side="right" className="w-full sm:max-w-md p-0">
+          {conversation && (
+            <ScrollArea className="h-screen">
+              <div className="px-6 py-6 space-y-6">
+                {/* Header do contato */}
+                <div className="flex items-start gap-4 pb-4 border-b">
+                  <Avatar className="h-16 w-16 flex-shrink-0">
+                    {(conversation as any).avatarImage ? (
+                      <AvatarImage src={(conversation as any).avatarImage} alt={conversation.name} />
+                    ) : null}
+                    <AvatarFallback className="bg-slate-500 text-white font-medium text-xl">
+                      {conversation.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0 pr-2">
+                    {isEditingContactName ? (
+                      <div className="relative inline-block max-w-[280px]">
+                        <Input
+                          value={editedContactName}
+                          onChange={(e) => setEditedContactName(e.target.value)}
+                          className="text-xl font-semibold h-9 pr-10 w-full"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              if (editedContactName.trim() && onConversationUpdate) {
+                                onConversationUpdate(conversation.id, { name: editedContactName.trim() });
+                                setIsEditingContactName(false);
+                                toast.success("Nome do contato atualizado!", { duration: 2000 });
+                              }
+                            } else if (e.key === "Escape") {
+                              setIsEditingContactName(false);
+                              setEditedContactName("");
+                            }
+                          }}
+                          onBlur={() => {
+                            // Cancela a edição apenas se não estiver salvando
+                            setTimeout(() => {
+                              if (!isSavingNameRef.current) {
+                                setIsEditingContactName(false);
+                                setEditedContactName("");
+                              }
+                              isSavingNameRef.current = false;
+                            }, 100);
+                          }}
+                        />
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 bg-background">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 p-0 hover:bg-transparent text-muted-foreground hover:text-green-600"
+                            onMouseDown={(e) => {
+                              // Previne o blur do input quando clicar no botão
+                              e.preventDefault();
+                              isSavingNameRef.current = true;
+                            }}
+                            onClick={() => {
+                              if (editedContactName.trim() && onConversationUpdate) {
+                                onConversationUpdate(conversation.id, { name: editedContactName.trim() });
+                                setIsEditingContactName(false);
+                                toast.success("Nome do contato atualizado!", { duration: 2000 });
+                              }
+                              isSavingNameRef.current = false;
+                            }}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-2 min-w-0 flex-1 max-w-[calc(100%-4rem)]">
+                        <SheetTitle className="text-xl font-semibold truncate min-w-0 leading-[1.2] pt-0.5">
+                          {conversation.name}
+                        </SheetTitle>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 flex-shrink-0 p-0 hover:bg-transparent text-muted-foreground hover:text-foreground mt-0.5 border-0 shadow-none"
+                          onClick={() => {
+                            setEditedContactName(conversation.name);
+                            setIsEditingContactName(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                    <div className="mt-1 space-y-1">
+                      <SheetDescription className="flex items-center gap-1">
+                        {conversation.phone || "Telefone não informado"}
+                      </SheetDescription>
+                      <Badge
+                        variant="outline"
+                        className={`cursor-pointer text-xs h-6 px-2 flex items-center gap-1 w-fit mt-1 ${
+                          conversation.isConverted
+                            ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                            : "hover:bg-accent"
+                        }`}
+                        onClick={() => {
+                          if (conversation && onConversationUpdate) {
+                            onConversationUpdate(conversation.id, { 
+                              isConverted: !conversation.isConverted 
+                            });
+                            toast.success(
+                              conversation.isConverted 
+                                ? "Marcado como não convertido" 
+                                : "Marcado como convertido"
+                            );
+                          }
+                        }}
+                      >
+                        <CheckCircle2 className={`h-3 w-3 ${conversation.isConverted ? "fill-current text-green-800 dark:text-green-400" : ""}`} />
+                        {conversation.isConverted ? "Convertido" : "Marcar como convertido"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                  {/* Etiquetas */}
+                  <Popover open={isDrawerTagsPopoverOpen} onOpenChange={setIsDrawerTagsPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <div className="cursor-pointer">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">Etiquetas</h3>
+                    {conversation.tags && conversation.tags.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {conversation.tags.map((tag, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="outline" 
+                            className={`text-xs border ${getTagColor(tag)}`}
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Nenhuma etiqueta</span>
+                    )}
+                  </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[320px] p-0 max-h-[calc(100vh-120px)] overflow-hidden flex flex-col" align="start" side="bottom" sideOffset={8}>
+                      <div className="p-3 flex flex-col">
+                        <h4 className="text-sm font-semibold mb-2">Gerenciar etiquetas</h4>
+                        <div className="space-y-2.5">
+                          <div>
+                            <h5 className="text-xs font-medium mb-1.5 text-muted-foreground">Etiquetas</h5>
+                            <ScrollArea className="h-[300px] border rounded-md p-1.5">
+                              <div className="space-y-1">
+                                {allTags.map((tag) => (
+                                  <div
+                                    key={tag}
+                                    className="group flex items-center justify-between gap-2 py-1 px-1.5 rounded-md hover:bg-muted cursor-pointer"
+                                    onClick={() => handleToggleDrawerTag(tag)}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Badge
+                                        variant="outline"
+                                        className={`text-xs ${getTagColor(tag)}`}
+                                      >
+                                        {tag}
+                                      </Badge>
+                                    </div>
+                                    {drawerSelectedTags.includes(tag) && (
+                                      <Check className="h-4 w-4 text-primary" />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Observações */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">Observações</h3>
+                    <Textarea
+                      placeholder="Adicione observações sobre este contato..."
+                      value={contactObservations}
+                      onChange={(e) => setContactObservations(e.target.value)}
+                      onBlur={() => {
+                        if (conversation && onConversationUpdate) {
+                          onConversationUpdate(conversation.id, {
+                            observations: contactObservations.trim(),
+                          });
+                        }
+                      }}
+                      rows={4}
+                      className="shadow-none resize-none"
+                    />
+                  </div>
+
+                  {/* Ações */}
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setSelectedAutomationId("");
+                        setExpandedAutomationId(null);
+                        setIsCreateAutomationOpen(true);
+                      }}
+                    >
+                      <Bot className="h-4 w-4 mr-2" />
+                      Adicionar automação manual
+                    </Button>
+                  </div>
+
+                  {/* Automações Ativas */}
+                  {conversation.activeAutomations && conversation.activeAutomations.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                          <Sparkles className="h-4 w-4" />
+                          Automações Ativas
+                        </h3>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => setIsAutomationsExpanded(!isAutomationsExpanded)}
+                        >
+                          {isAutomationsExpanded ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {isAutomationsExpanded && (
+                        <div className="space-y-2">
+                        {conversation.activeAutomations.map((automationId) => {
+                          const automation = availableAutomations.find((a) => a.id === automationId);
+                          if (!automation) return null;
+                          return (
+                            <div
+                              key={automationId}
+                              className="flex items-start justify-between p-3 rounded-lg border bg-card"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium">{automation.name}</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {automation.description}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 flex-shrink-0 ml-2"
+                                onClick={() => {
+                                  if (conversation && onConversationUpdate) {
+                                    const updatedAutomations = conversation.activeAutomations?.filter(
+                                      (id) => id !== automationId
+                                    ) || [];
+                                    onConversationUpdate(conversation.id, {
+                                      activeAutomations: updatedAutomations,
+                                    });
+                                    toast.success(`Automação "${automation.name}" desativada`);
+                                  }
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Mensagens Favoritas */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        Mensagens Favoritas
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => setIsFavoriteMessagesExpanded(!isFavoriteMessagesExpanded)}
+                      >
+                        {isFavoriteMessagesExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    {isFavoriteMessagesExpanded && (
+                      <>
+                        {messages.filter(msg => msg.isFavorite).length > 0 ? (
+                          <div className="space-y-2">
+                            {messages
+                              .filter(msg => msg.isFavorite)
+                              .map((message) => (
+                                <div
+                                  key={message.id}
+                                  className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                                  onClick={() => {
+                                    // Scroll até a mensagem no chat
+                                    const messageElement = document.querySelector(`[data-message-id="${message.id}"]`);
+                                    if (messageElement) {
+                                      messageElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                                      // Destacar a mensagem temporariamente
+                                      messageElement.classList.add("ring-2", "ring-yellow-400");
+                                      setTimeout(() => {
+                                        messageElement.classList.remove("ring-2", "ring-yellow-400");
+                                      }, 2000);
+                                    }
+                                    setIsConversationDrawerOpen(false);
+                                  }}
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 flex-shrink-0 mt-0.5" />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-xs text-muted-foreground mb-1">
+                                        {message.isUser ? "Você" : conversation?.name || "Contato"} • {message.timestamp}
+                                      </div>
+                                      <div className="text-sm line-clamp-2">
+                                        {message.content}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground py-2">
+                            Nenhuma mensagem favoritada
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Histórico de Chamadas */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Histórico de Chamadas
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => setIsCallHistoryExpanded(!isCallHistoryExpanded)}
+                      >
+                        {isCallHistoryExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    {isCallHistoryExpanded && (
+                      <>
+                        {conversation.callHistory && conversation.callHistory.length > 0 ? (
+                          <div className="space-y-2">
+                        {conversation.callHistory.map((call) => (
+                          <div
+                            key={call.id}
+                            className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              {call.type === "incoming" ? (
+                                <PhoneIncoming className="h-4 w-4 text-green-600 flex-shrink-0" />
+                              ) : call.type === "outgoing" ? (
+                                <PhoneOutgoing className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                              ) : (
+                                <PhoneMissed className="h-4 w-4 text-red-600 flex-shrink-0" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium">
+                                  {call.type === "incoming" ? "Chamada recebida" : call.type === "outgoing" ? "Chamada realizada" : "Chamada perdida"}
+                                </div>
+                                <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                                  <span>{call.date}</span>
+                                  {call.duration && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="flex items-center gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, "0")}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground py-2">
+                            Nenhuma chamada registrada
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Agendamentos */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Agendamentos
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => setIsAppointmentsExpanded(!isAppointmentsExpanded)}
+                      >
+                        {isAppointmentsExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    {isAppointmentsExpanded && (
+                      <>
+                        <div className="mb-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs"
+                            onClick={() => {
+                              setNewAppointmentTitle("");
+                              setNewAppointmentDate("");
+                              setNewAppointmentTime("");
+                              setNewAppointmentAgreement("");
+                              setNewAppointmentProfessional("");
+                              setNewAppointmentLocation("");
+                              setNewAppointmentService("");
+                              setIsCreateAppointmentOpen(true);
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Adicionar
+                          </Button>
+                        </div>
+                        {conversation.appointments && conversation.appointments.length > 0 ? (
+                      <div className="space-y-2">
+                        {conversation.appointments.map((appointment) => (
+                          <div
+                            key={appointment.id}
+                            className="flex items-start justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                            onClick={() => {
+                              setEditingAppointmentId(appointment.id);
+                              setNewAppointmentTitle(appointment.title);
+                              // Converter data do formato "15 Nov, 2024" para "2024-11-15"
+                              const dateParts = appointment.date.split(" ");
+                              if (dateParts.length === 3) {
+                                const day = dateParts[0];
+                                const monthMap: Record<string, string> = {
+                                  "Jan": "01", "Fev": "02", "Mar": "03", "Abr": "04",
+                                  "Mai": "05", "Jun": "06", "Jul": "07", "Ago": "08",
+                                  "Set": "09", "Out": "10", "Nov": "11", "Dez": "12"
+                                };
+                                const month = monthMap[dateParts[1].replace(",", "")] || "01";
+                                const year = dateParts[2];
+                                setNewAppointmentDate(`${year}-${month}-${day.padStart(2, "0")}`);
+                              }
+                              setNewAppointmentTime(appointment.time);
+                              setIsEditAppointmentOpen(true);
+                            }}
+                          >
+                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                              <Calendar className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium">{appointment.title}</div>
+                                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                                  <span>{appointment.date}</span>
+                                  <span>•</span>
+                                  <span>{appointment.time}</span>
+                                </div>
+                                <Badge
+                                  variant={
+                                    appointment.status === "scheduled" ? "default" :
+                                    appointment.status === "completed" ? "secondary" :
+                                    "destructive"
+                                  }
+                                  className="text-xs mt-2"
+                                >
+                                  {appointment.status === "scheduled" ? "Agendado" :
+                                   appointment.status === "completed" ? "Concluído" :
+                                   "Cancelado"}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground py-2">
+                          Nenhum agendamento registrado
+                        </div>
+                      )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Botão de bloquear - no final da drawer */}
+                  <div className="border-t pt-4 mt-6">
+                    <Button
+                      variant={conversation.status === "blocked" ? "destructive" : "outline"}
+                      className="w-full justify-start"
+                      onClick={() => {
+                        if (conversation && onConversationUpdate) {
+                          const newStatus = conversation.status === "blocked" ? "open" : "blocked";
+                          onConversationUpdate(conversation.id, { status: newStatus });
+                          toast.success(
+                            newStatus === "blocked" 
+                              ? "Contato bloqueado" 
+                              : "Contato desbloqueado"
+                          );
+                        }
+                      }}
+                    >
+                      {conversation.status === "blocked" ? (
+                        <>
+                          <Shield className="h-4 w-4 mr-2" />
+                          Desbloquear contato
+                        </>
+                      ) : (
+                        <>
+                          <Ban className="h-4 w-4 mr-2" />
+                          Bloquear contato
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </ScrollArea>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Dialog Criar Agendamento */}
+      <Dialog open={isCreateAppointmentOpen} onOpenChange={setIsCreateAppointmentOpen}>
+        <DialogContent className="sm:max-w-[500px] h-[85vh] max-h-[600px] flex flex-col p-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
+            <DialogTitle>Criar agendamento</DialogTitle>
+            <DialogDescription>
+              Adicione um novo agendamento para {conversation?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 overflow-y-auto px-6">
+            <div className="space-y-4 pb-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Descrição</label>
+                <Textarea
+                  placeholder="Descreva o agendamento"
+                  value={newAppointmentTitle}
+                  onChange={(e) => setNewAppointmentTitle(e.target.value)}
+                  rows={3}
+                  className="shadow-none"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Convênio <span className="text-muted-foreground font-normal">(Opcional)</span>
+                </label>
+                <Select value={newAppointmentAgreement} onValueChange={setNewAppointmentAgreement}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione um convênio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unimed">Unimed</SelectItem>
+                    <SelectItem value="amil">Amil</SelectItem>
+                    <SelectItem value="sulamerica">SulAmérica</SelectItem>
+                    <SelectItem value="bradesco">Bradesco Saúde</SelectItem>
+                    <SelectItem value="particular">Particular</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Profissional</label>
+                <Select value={newAppointmentProfessional} onValueChange={setNewAppointmentProfessional}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione um(a) profissional" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dr-silva">Dr. João Silva</SelectItem>
+                    <SelectItem value="dra-santos">Dra. Maria Santos</SelectItem>
+                    <SelectItem value="dr-costa">Dr. Pedro Costa</SelectItem>
+                    <SelectItem value="dra-oliveira">Dra. Ana Oliveira</SelectItem>
+                    <SelectItem value="dr-ferreira">Dr. Carlos Ferreira</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Localidade</label>
+                <Select value={newAppointmentLocation} onValueChange={setNewAppointmentLocation}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione uma localidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sao-paulo">São Paulo - Unidade Centro</SelectItem>
+                    <SelectItem value="sao-paulo-vila">São Paulo - Unidade Vila Olímpia</SelectItem>
+                    <SelectItem value="rio-de-janeiro">Rio de Janeiro - Unidade Copacabana</SelectItem>
+                    <SelectItem value="belo-horizonte">Belo Horizonte - Unidade Savassi</SelectItem>
+                    <SelectItem value="online">Consulta Online</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Serviço</label>
+                <Select value={newAppointmentService} onValueChange={setNewAppointmentService}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione um serviço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="consulta-geral">Consulta Geral</SelectItem>
+                    <SelectItem value="consulta-especializada">Consulta Especializada</SelectItem>
+                    <SelectItem value="exame">Exame</SelectItem>
+                    <SelectItem value="retorno">Retorno</SelectItem>
+                    <SelectItem value="avaliacao">Avaliação</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Data</label>
+                  <DatePicker
+                    value={newAppointmentDate}
+                    onChange={setNewAppointmentDate}
+                    minDate={new Date()}
+                    placeholder="Selecione a data"
+                    className="shadow-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Horário</label>
+                  <TimePicker
+                    value={newAppointmentTime}
+                    onChange={setNewAppointmentTime}
+                    placeholder="HH:MM"
+                    className="shadow-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="flex-shrink-0 px-6 pb-6 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateAppointmentOpen(false);
+                setNewAppointmentTitle("");
+                setNewAppointmentDate("");
+                setNewAppointmentTime("");
+                setNewAppointmentAgreement("");
+                setNewAppointmentProfessional("");
+                setNewAppointmentLocation("");
+                setNewAppointmentService("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!newAppointmentTitle.trim()) {
+                  toast.error("Por favor, preencha a descrição do agendamento");
+                  return;
+                }
+                if (!newAppointmentProfessional) {
+                  toast.error("Por favor, selecione um profissional");
+                  return;
+                }
+                if (!newAppointmentLocation) {
+                  toast.error("Por favor, selecione uma localidade");
+                  return;
+                }
+                if (!newAppointmentService) {
+                  toast.error("Por favor, selecione um serviço");
+                  return;
+                }
+                if (!newAppointmentDate) {
+                  toast.error("Por favor, selecione uma data");
+                  return;
+                }
+                if (!newAppointmentTime) {
+                  toast.error("Por favor, informe o horário");
+                  return;
+                }
+
+                if (conversation && onConversationUpdate) {
+                  // Formatar data no formato usado nos mockados (ex: "15 Nov, 2024")
+                  const dateObj = new Date(newAppointmentDate + "T00:00:00");
+                  const formattedDate = dateObj.toLocaleDateString("pt-BR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  });
+
+                  const newAppointment = {
+                    id: `appt-${Date.now()}`,
+                    title: newAppointmentTitle.trim(),
+                    date: formattedDate,
+                    time: newAppointmentTime,
+                    status: "scheduled" as const,
+                  };
+
+                  const currentAppointments = conversation.appointments || [];
+                  onConversationUpdate(conversation.id, {
+                    appointments: [...currentAppointments, newAppointment],
+                  });
+
+                  toast.success("Agendamento criado com sucesso!");
+                  setIsCreateAppointmentOpen(false);
+                  setNewAppointmentTitle("");
+                  setNewAppointmentDate("");
+                  setNewAppointmentTime("");
+                  setNewAppointmentAgreement("");
+                  setNewAppointmentProfessional("");
+                  setNewAppointmentLocation("");
+                  setNewAppointmentService("");
+                }
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Editar Agendamento */}
+      <Dialog open={isEditAppointmentOpen} onOpenChange={setIsEditAppointmentOpen}>
+        <DialogContent className="sm:max-w-[500px] h-[85vh] max-h-[600px] flex flex-col p-0">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
+            <DialogTitle>Editar agendamento</DialogTitle>
+            <DialogDescription>
+              Edite as informações do agendamento para {conversation?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 overflow-y-auto px-6">
+            <div className="space-y-4 pb-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Descrição</label>
+                <Textarea
+                  placeholder="Descreva o agendamento"
+                  value={newAppointmentTitle}
+                  onChange={(e) => setNewAppointmentTitle(e.target.value)}
+                  rows={3}
+                  className="shadow-none"
+                />
+    </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Convênio <span className="text-muted-foreground font-normal">(Opcional)</span>
+                </label>
+                <Select value={newAppointmentAgreement} onValueChange={setNewAppointmentAgreement}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione um convênio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unimed">Unimed</SelectItem>
+                    <SelectItem value="amil">Amil</SelectItem>
+                    <SelectItem value="sulamerica">SulAmérica</SelectItem>
+                    <SelectItem value="bradesco">Bradesco Saúde</SelectItem>
+                    <SelectItem value="particular">Particular</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Profissional</label>
+                <Select value={newAppointmentProfessional} onValueChange={setNewAppointmentProfessional}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione um(a) profissional" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dr-silva">Dr. João Silva</SelectItem>
+                    <SelectItem value="dra-santos">Dra. Maria Santos</SelectItem>
+                    <SelectItem value="dr-costa">Dr. Pedro Costa</SelectItem>
+                    <SelectItem value="dra-oliveira">Dra. Ana Oliveira</SelectItem>
+                    <SelectItem value="dr-ferreira">Dr. Carlos Ferreira</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Localidade</label>
+                <Select value={newAppointmentLocation} onValueChange={setNewAppointmentLocation}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione uma localidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sao-paulo">São Paulo - Unidade Centro</SelectItem>
+                    <SelectItem value="sao-paulo-vila">São Paulo - Unidade Vila Olímpia</SelectItem>
+                    <SelectItem value="rio-de-janeiro">Rio de Janeiro - Unidade Copacabana</SelectItem>
+                    <SelectItem value="belo-horizonte">Belo Horizonte - Unidade Savassi</SelectItem>
+                    <SelectItem value="online">Consulta Online</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Serviço</label>
+                <Select value={newAppointmentService} onValueChange={setNewAppointmentService}>
+                  <SelectTrigger className="w-full shadow-none">
+                    <SelectValue placeholder="Selecione um serviço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="consulta-geral">Consulta Geral</SelectItem>
+                    <SelectItem value="consulta-especializada">Consulta Especializada</SelectItem>
+                    <SelectItem value="exame">Exame</SelectItem>
+                    <SelectItem value="retorno">Retorno</SelectItem>
+                    <SelectItem value="avaliacao">Avaliação</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Data</label>
+                  <DatePicker
+                    value={newAppointmentDate}
+                    onChange={setNewAppointmentDate}
+                    minDate={new Date()}
+                    placeholder="Selecione a data"
+                    className="shadow-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Horário</label>
+                  <TimePicker
+                    value={newAppointmentTime}
+                    onChange={setNewAppointmentTime}
+                    placeholder="HH:MM"
+                    className="shadow-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="flex-shrink-0 px-6 pb-6 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditAppointmentOpen(false);
+                setEditingAppointmentId(null);
+                setNewAppointmentTitle("");
+                setNewAppointmentDate("");
+                setNewAppointmentTime("");
+                setNewAppointmentAgreement("");
+                setNewAppointmentProfessional("");
+                setNewAppointmentLocation("");
+                setNewAppointmentService("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!newAppointmentTitle.trim()) {
+                  toast.error("Por favor, preencha a descrição do agendamento");
+                  return;
+                }
+                if (!newAppointmentProfessional) {
+                  toast.error("Por favor, selecione um profissional");
+                  return;
+                }
+                if (!newAppointmentLocation) {
+                  toast.error("Por favor, selecione uma localidade");
+                  return;
+                }
+                if (!newAppointmentService) {
+                  toast.error("Por favor, selecione um serviço");
+                  return;
+                }
+                if (!newAppointmentDate) {
+                  toast.error("Por favor, selecione uma data");
+                  return;
+                }
+                if (!newAppointmentTime) {
+                  toast.error("Por favor, informe o horário");
+                  return;
+                }
+
+                if (conversation && onConversationUpdate && editingAppointmentId) {
+                  // Formatar data no formato usado nos mockados (ex: "15 Nov, 2024")
+                  const dateObj = new Date(newAppointmentDate + "T00:00:00");
+                  const formattedDate = dateObj.toLocaleDateString("pt-BR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  });
+
+                  const currentAppointments = conversation.appointments || [];
+                  const updatedAppointments = currentAppointments.map((appt) =>
+                    appt.id === editingAppointmentId
+                      ? {
+                          ...appt,
+                          title: newAppointmentTitle.trim(),
+                          date: formattedDate,
+                          time: newAppointmentTime,
+                        }
+                      : appt
+                  );
+
+                  onConversationUpdate(conversation.id, {
+                    appointments: updatedAppointments,
+                  });
+
+                  toast.success("Agendamento atualizado com sucesso!");
+                  setIsEditAppointmentOpen(false);
+                  setEditingAppointmentId(null);
+                  setNewAppointmentTitle("");
+                  setNewAppointmentDate("");
+                  setNewAppointmentTime("");
+                  setNewAppointmentAgreement("");
+                  setNewAppointmentProfessional("");
+                  setNewAppointmentLocation("");
+                  setNewAppointmentService("");
+                }
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Adicionar Automação Manual */}
+      <Dialog open={isCreateAutomationOpen} onOpenChange={setIsCreateAutomationOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Adicionar automação manual</DialogTitle>
+            <DialogDescription>
+              Selecione uma automação para ativar nesta conversa
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 overflow-y-auto">
+            <div className="space-y-2 py-4">
+              {availableAutomations.map((automation) => (
+                <div
+                  key={automation.id}
+                  className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                    selectedAutomationId === automation.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:bg-accent/50"
+                  }`}
+                  onClick={() => setSelectedAutomationId(automation.id)}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-sm font-semibold">{automation.name}</h4>
+                        {selectedAutomationId === automation.id && (
+                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {automation.description}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedAutomationId(
+                            expandedAutomationId === automation.id ? null : automation.id
+                          );
+                        }}
+                      >
+                        {expandedAutomationId === automation.id ? "Ocultar" : "Ver"} detalhes
+                      </Button>
+                      {expandedAutomationId === automation.id && (
+                        <div className="mt-3 space-y-2 pt-3 border-t">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Palavras-chave que acionam:
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {automation.trigger.map((trigger, idx) => (
+                                <Badge
+                                  key={idx}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {trigger}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Mensagem automática:
+                            </p>
+                            <div className="bg-muted rounded-md p-2 text-xs">
+                              {automation.message}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateAutomationOpen(false);
+                setSelectedAutomationId("");
+                setExpandedAutomationId(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!selectedAutomationId) {
+                  toast.error("Por favor, selecione uma automação");
+                  return;
+                }
+
+                const selectedAutomation = availableAutomations.find(
+                  (a) => a.id === selectedAutomationId
+                );
+
+                if (selectedAutomation && conversation && onConversationUpdate) {
+                  // Adiciona a automação à lista de automações ativas
+                  const currentAutomations = conversation.activeAutomations || [];
+                  if (!currentAutomations.includes(selectedAutomationId)) {
+                    onConversationUpdate(conversation.id, {
+                      automationEnabled: true,
+                      activeAutomations: [...currentAutomations, selectedAutomationId],
+                    });
+
+                    toast.success(`Automação "${selectedAutomation.name}" ativada para esta conversa!`);
+                  } else {
+                    toast.info(`Automação "${selectedAutomation.name}" já está ativa nesta conversa`);
+                  }
+                  setIsCreateAutomationOpen(false);
+                  setSelectedAutomationId("");
+                  setExpandedAutomationId(null);
+                }
+              }}
+            >
+              Ativar automação
             </Button>
           </DialogFooter>
         </DialogContent>

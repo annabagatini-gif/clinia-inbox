@@ -13,6 +13,42 @@ export const mockConversations: Conversation[] = [
     tags: ["Urgente", "Pagamento"],
     isPinned: true,
     isImportant: true,
+    phone: "+55 11 98765-4321",
+    callHistory: [
+      {
+        id: "call1",
+        type: "incoming",
+        date: "10 Nov, 14:30",
+        duration: 245,
+      },
+      {
+        id: "call2",
+        type: "outgoing",
+        date: "9 Nov, 10:15",
+        duration: 180,
+      },
+      {
+        id: "call3",
+        type: "missed",
+        date: "8 Nov, 16:45",
+      },
+    ],
+    appointments: [
+      {
+        id: "appt1",
+        title: "Consulta sobre pagamento",
+        date: "15 Nov, 2024",
+        time: "14:00",
+        status: "scheduled",
+      },
+      {
+        id: "appt2",
+        title: "Follow-up cartão",
+        date: "12 Nov, 2024",
+        time: "10:30",
+        status: "completed",
+      },
+    ],
     assignedTo: {
       id: "user1",
       name: "June Jensen",
@@ -32,6 +68,24 @@ export const mockConversations: Conversation[] = [
     tags: ["Pedido"],
     isPinned: false,
     isImportant: false,
+    phone: "+55 21 99876-5432",
+    callHistory: [
+      {
+        id: "call1",
+        type: "outgoing",
+        date: "10 Nov, 09:20",
+        duration: 320,
+      },
+    ],
+    appointments: [
+      {
+        id: "appt1",
+        title: "Entrega do pedido #1234",
+        date: "18 Nov, 2024",
+        time: "15:00",
+        status: "scheduled",
+      },
+    ],
     assignedTo: {
       id: "user1",
       name: "June Jensen",
@@ -51,6 +105,26 @@ export const mockConversations: Conversation[] = [
     tags: ["Suporte"],
     isPinned: false,
     isImportant: false,
+    phone: "+55 11 91234-5678",
+    callHistory: [
+      {
+        id: "call1",
+        type: "incoming",
+        date: "10 Nov, 11:00",
+        duration: 450,
+      },
+      {
+        id: "call2",
+        type: "missed",
+        date: "9 Nov, 14:20",
+      },
+      {
+        id: "call3",
+        type: "outgoing",
+        date: "9 Nov, 14:25",
+        duration: 380,
+      },
+    ],
     assignedTo: {
       id: "user1",
       name: "June Jensen",
@@ -70,6 +144,7 @@ export const mockConversations: Conversation[] = [
     tags: [],
     isPinned: false,
     isImportant: false,
+    phone: "+55 31 98765-4321",
     assignedTo: {
       id: "user1",
       name: "June Jensen",
@@ -89,6 +164,31 @@ export const mockConversations: Conversation[] = [
     tags: ["Bug"],
     isPinned: false,
     isImportant: true,
+    phone: "+55 41 97654-3210",
+    callHistory: [
+      {
+        id: "call1",
+        type: "outgoing",
+        date: "10 Nov, 12:00",
+        duration: 600,
+      },
+    ],
+    appointments: [
+      {
+        id: "appt1",
+        title: "Reunião técnica - Bug página",
+        date: "13 Nov, 2024",
+        time: "11:00",
+        status: "scheduled",
+      },
+      {
+        id: "appt2",
+        title: "Teste de correção",
+        date: "11 Nov, 2024",
+        time: "16:00",
+        status: "completed",
+      },
+    ],
     assignedTo: {
       id: "user1",
       name: "June Jensen",
@@ -108,6 +208,7 @@ export const mockConversations: Conversation[] = [
     tags: [],
     isPinned: false,
     isImportant: false,
+    phone: "+55 11 99876-5432",
     status: "open",
   },
   {
@@ -122,6 +223,30 @@ export const mockConversations: Conversation[] = [
     tags: ["Suporte"],
     isPinned: false,
     isImportant: false,
+    phone: "+55 21 91234-5678",
+    callHistory: [
+      {
+        id: "call1",
+        type: "incoming",
+        date: "9 Nov, 15:30",
+        duration: 520,
+      },
+      {
+        id: "call2",
+        type: "outgoing",
+        date: "8 Nov, 10:00",
+        duration: 280,
+      },
+    ],
+    appointments: [
+      {
+        id: "appt1",
+        title: "Demonstração nova funcionalidade",
+        date: "20 Nov, 2024",
+        time: "14:30",
+        status: "scheduled",
+      },
+    ],
     assignedTo: {
       id: "user2",
       name: "Anna B",
@@ -141,6 +266,7 @@ export const mockConversations: Conversation[] = [
     tags: ["Urgente"],
     isPinned: false,
     isImportant: false,
+    phone: "+55 11 98765-4321",
     assignedTo: {
       id: "user2",
       name: "Anna B",
@@ -160,6 +286,37 @@ export const mockConversations: Conversation[] = [
     tags: [],
     isPinned: false,
     isImportant: false,
+    phone: "+55 48 91234-5678",
+    callHistory: [
+      {
+        id: "call1",
+        type: "incoming",
+        date: "8 Nov, 10:45",
+        duration: 420,
+      },
+      {
+        id: "call2",
+        type: "outgoing",
+        date: "8 Nov, 10:02",
+        duration: 180,
+      },
+    ],
+    appointments: [
+      {
+        id: "appt1",
+        title: "Consulta inicial",
+        date: "8 Nov, 2024",
+        time: "10:00",
+        status: "completed",
+      },
+      {
+        id: "appt2",
+        title: "Follow-up",
+        date: "22 Nov, 2024",
+        time: "09:00",
+        status: "scheduled",
+      },
+    ],
     assignedTo: {
       id: "user1",
       name: "June Jensen",
@@ -179,6 +336,7 @@ export const mockConversations: Conversation[] = [
     tags: ["Suporte"],
     isPinned: false,
     isImportant: false,
+    phone: "+55 51 98765-4321",
     assignedTo: {
       id: "user2",
       name: "Anna B",
@@ -198,6 +356,7 @@ export const mockConversations: Conversation[] = [
     tags: [],
     isPinned: false,
     isImportant: false,
+    phone: "+55 85 91234-5678",
     status: "open",
   },
   {
@@ -212,6 +371,29 @@ export const mockConversations: Conversation[] = [
     tags: ["Urgente", "Pagamento"],
     isPinned: false,
     isImportant: true,
+    phone: "+55 11 97654-3210",
+    callHistory: [
+      {
+        id: "call1",
+        type: "missed",
+        date: "7 Nov, 15:00",
+      },
+      {
+        id: "call2",
+        type: "incoming",
+        date: "7 Nov, 15:05",
+        duration: 380,
+      },
+    ],
+    appointments: [
+      {
+        id: "appt1",
+        title: "Resolução problema pagamento",
+        date: "14 Nov, 2024",
+        time: "13:00",
+        status: "scheduled",
+      },
+    ],
     status: "open",
   },
   {
@@ -226,6 +408,7 @@ export const mockConversations: Conversation[] = [
     tags: ["Urgente"],
     isPinned: false,
     isImportant: false,
+    phone: "+55 21 98765-4321",
     assignedTo: {
       id: "user2",
       name: "Anna B",
@@ -245,6 +428,7 @@ export const mockConversations: Conversation[] = [
     tags: [],
     isPinned: false,
     isImportant: false,
+    phone: "+55 47 99876-5432",
     status: "closed",
   },
   {
@@ -259,6 +443,49 @@ export const mockConversations: Conversation[] = [
     tags: ["Bug", "Urgente"],
     isPinned: false,
     isImportant: true,
+    phone: "+55 11 91234-5678",
+    callHistory: [
+      {
+        id: "call1",
+        type: "outgoing",
+        date: "5 Nov, 10:30",
+        duration: 720,
+      },
+      {
+        id: "call2",
+        type: "incoming",
+        date: "5 Nov, 10:02",
+        duration: 450,
+      },
+      {
+        id: "call3",
+        type: "missed",
+        date: "4 Nov, 16:20",
+      },
+    ],
+    appointments: [
+      {
+        id: "appt1",
+        title: "Suporte técnico - Login",
+        date: "16 Nov, 2024",
+        time: "10:00",
+        status: "scheduled",
+      },
+      {
+        id: "appt2",
+        title: "Verificação conta",
+        date: "5 Nov, 2024",
+        time: "10:00",
+        status: "completed",
+      },
+      {
+        id: "appt3",
+        title: "Reunião cancelada",
+        date: "4 Nov, 2024",
+        time: "16:00",
+        status: "cancelled",
+      },
+    ],
     assignedTo: {
       id: "user1",
       name: "June Jensen",

@@ -143,4 +143,10 @@
     cursor: default !important;
   }
   
+  /* Garantir que botões X dos toasts estejam sempre visíveis */
+  [data-sonner-toast] [data-close-button] {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
 }

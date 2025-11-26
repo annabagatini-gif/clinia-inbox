@@ -18,12 +18,33 @@ export function loadConversations(): Conversation[] {
     const stored = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Se houver conversas salvas, mesclar com mockadas (para novas conversas mockadas)
+      // Criar um mapa das conversas mockadas por ID para facilitar a mesclagem
+      const mockMap = new Map(mockConversations.map((c) => [c.id, c]));
+      
+      // Mesclar conversas salvas com mockadas, atualizando campos que podem ter sido adicionados
+      const merged = parsed.map((saved: Conversation) => {
+        const mock = mockMap.get(saved.id);
+        if (mock) {
+          // Mesclar dados salvos com mockados, garantindo que campos novos sejam atualizados dos mockados
+          return {
+            ...mock,
+            ...saved,
+            // Sempre usar campos novos dos mockados se existirem (para garantir atualizações)
+            phone: mock.phone || saved.phone,
+            callHistory: mock.callHistory || saved.callHistory,
+            appointments: mock.appointments || saved.appointments,
+          };
+        }
+        return saved;
+      });
+      
+      // Adicionar novas conversas mockadas que não estão salvas
       const storedIds = new Set(parsed.map((c: Conversation) => c.id));
       const newMockConversations = mockConversations.filter(
         (c) => !storedIds.has(c.id)
       );
-      return [...parsed, ...newMockConversations];
+      
+      return [...merged, ...newMockConversations];
     }
   } catch (error) {
     console.error("Erro ao carregar conversas do localStorage:", error);

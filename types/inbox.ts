@@ -17,6 +17,23 @@ export interface Conversation {
   };
   status: "open" | "closed" | "blocked";
   automationEnabled?: boolean;
+  activeAutomations?: string[]; // IDs das automações ativas nesta conversa
+  isConverted?: boolean;
+  phone?: string;
+  observations?: string; // Observações sobre o contato
+  callHistory?: Array<{
+    id: string;
+    type: "incoming" | "outgoing" | "missed";
+    date: string;
+    duration?: number;
+  }>;
+  appointments?: Array<{
+    id: string;
+    title: string;
+    date: string;
+    time: string;
+    status: "scheduled" | "completed" | "cancelled";
+  }>;
 }
 
 export type MessageStatus = 
@@ -65,6 +82,11 @@ export interface Message {
     phone: string;
   }>;
   deletedForEveryone?: boolean;
+  tagChanges?: {
+    added: string[];
+    removed: string[];
+    changedBy?: string; // Nome do usuário que fez a mudança
+  };
 }
 
 export interface Annotation {

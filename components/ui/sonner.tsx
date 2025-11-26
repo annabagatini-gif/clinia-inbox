@@ -22,6 +22,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toaster]:bg-green-50 group-[.toaster]:text-green-900 group-[.toaster]:border-green-200",
           error:
             "group-[.toaster]:bg-red-50 group-[.toaster]:text-red-900 group-[.toaster]:border-red-200",
+          closeButton: "opacity-100 !opacity-100",
         },
       }}
       duration={5000}
