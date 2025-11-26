@@ -24,11 +24,25 @@ export default function Home() {
     const loadedConversations = loadConversations();
     setConversations(loadedConversations);
     
-    // Se houver ?drawer=true na URL, seleciona a primeira conversa automaticamente
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
+      
+      // Se houver ?drawer=true na URL, seleciona a primeira conversa automaticamente
       if (urlParams.get("drawer") === "true" && loadedConversations.length > 0) {
         setSelectedConversationId(loadedConversations[0].id);
+      }
+      
+      // Sempre seleciona a conversa da Maria Silva por padrão (se existir)
+      if (!urlParams.get("drawer")) {
+        const mariaConversation = loadedConversations.find(
+          conv => conv.name.toLowerCase().includes("maria") && conv.name.toLowerCase().includes("silva")
+        );
+        if (mariaConversation) {
+          setSelectedConversationId(mariaConversation.id);
+        } else if (loadedConversations.length > 0) {
+          // Se não encontrar Maria Silva, seleciona a primeira conversa
+          setSelectedConversationId(loadedConversations[0].id);
+        }
       }
     }
   }, []);
