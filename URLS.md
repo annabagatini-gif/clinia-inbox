@@ -32,6 +32,25 @@ https://sua-url.vercel.app?conversation=1&drawer=true
 - Drawer já aberta
 - Perfeito para importar no Figma com conversa específica
 
+### 5. URL com Conversa Atribuída (botões de microfone e enviar aparecem)
+```
+https://sua-url.vercel.app?conversation=1&assigned=true
+```
+- Abre a conversa da Maria Silva (ID: 1)
+- Conversa já atribuída ao usuário atual (Anna B)
+- Botões de microfone e enviar mensagem aparecem automaticamente
+- Ideal para testar funcionalidades de envio de mensagens
+
+### 6. URL Completa (Maria Silva + Atribuída + Drawer)
+```
+https://sua-url.vercel.app?conversation=1&assigned=true&drawer=true
+```
+- Abre a conversa da Maria Silva (ID: 1)
+- Conversa já atribuída ao usuário atual
+- Drawer já aberta
+- Botões de microfone e enviar aparecem
+- Perfeito para importar no Figma com tudo configurado
+
 ## IDs das Conversas
 
 - **Maria Silva**: `id: "1"`

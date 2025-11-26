@@ -19,6 +19,15 @@ export default function Home() {
     unassigned: 3,
   });
 
+  const handleConversationUpdate = (conversationId: string, updates: Partial<Conversation>) => {
+    setConversations((prev) => {
+      const updated = prev.map((conv) =>
+        conv.id === conversationId ? { ...conv, ...updates } : conv
+      );
+      return updated;
+    });
+  };
+
   // Carregar conversas do localStorage na inicialização
   useEffect(() => {
     const loadedConversations = loadConversations();
@@ -33,14 +42,67 @@ export default function Home() {
         const foundConversation = loadedConversations.find(conv => conv.id === conversationId);
         if (foundConversation) {
           setSelectedConversationId(foundConversation.id);
+          
+          // Se houver ?assigned=true, atribui a conversa ao usuário atual
+          if (urlParams.get("assigned") === "true") {
+            const updated = loadedConversations.map((conv) =>
+              conv.id === conversationId ? {
+                ...conv,
+                assignedTo: {
+                  id: "user2",
+                  name: "Anna B",
+                  avatar: "AB",
+                },
+              } : conv
+            );
+            setConversations(updated);
+          }
           return;
         }
       }
       
       // Se houver ?drawer=true na URL, seleciona a primeira conversa automaticamente
       if (urlParams.get("drawer") === "true" && loadedConversations.length > 0) {
-        setSelectedConversationId(loadedConversations[0].id);
+        const firstConv = loadedConversations[0];
+        setSelectedConversationId(firstConv.id);
+        
+        // Se também houver ?assigned=true, atribui
+        if (urlParams.get("assigned") === "true") {
+          const updated = loadedConversations.map((conv) =>
+            conv.id === firstConv.id ? {
+              ...conv,
+              assignedTo: {
+                id: "user2",
+                name: "Anna B",
+                avatar: "AB",
+              },
+            } : conv
+          );
+          setConversations(updated);
+        }
         return;
+      }
+      
+      // Se houver ?assigned=true, busca Maria Silva e atribui
+      if (urlParams.get("assigned") === "true") {
+        const mariaConversation = loadedConversations.find(
+          conv => conv.name.toLowerCase().includes("maria") && conv.name.toLowerCase().includes("silva")
+        );
+        if (mariaConversation) {
+          setSelectedConversationId(mariaConversation.id);
+          const updated = loadedConversations.map((conv) =>
+            conv.id === mariaConversation.id ? {
+              ...conv,
+              assignedTo: {
+                id: "user2",
+                name: "Anna B",
+                avatar: "AB",
+              },
+            } : conv
+          );
+          setConversations(updated);
+          return;
+        }
       }
       
       // Se houver ?maria=true ou nenhum parâmetro, seleciona Maria Silva por padrão
@@ -151,7 +213,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F1F3F4] p-2 gap-2">
+    <div className="flex h-screen overflow-hidden bg-sidebar p-2 gap-2">
       {/* Sidebar - oculta em mobile */}
       <div className="hidden lg:flex">
         <InboxSidebar 
