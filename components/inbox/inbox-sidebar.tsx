@@ -37,6 +37,9 @@ interface InboxSidebarProps {
     unread: number;
     unassigned: number;
   };
+  onNotificationDialogChange?: (isOpen: boolean) => void;
+  onInternalChatDialogChange?: (isOpen: boolean) => void;
+  onInternalChatCreated?: () => void;
 }
 
 // Lista de usuários com status
@@ -68,12 +71,26 @@ interface MiniChat {
 
 const MAX_MINIMIZED_CHATS = 5; // Número máximo de conversas minimizadas
 
-export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarProps) {
+export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDialogChange, onInternalChatDialogChange, onInternalChatCreated }: InboxSidebarProps) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notificationPreference, setNotificationPreference] = useState<"all" | "assigned" | "none">("all");
   const [isInternalConversationOpen, setIsInternalConversationOpen] = useState(false);
   const [miniChats, setMiniChats] = useState<MiniChat[]>([]);
   const [miniChatMessages, setMiniChatMessages] = useState<Record<string, string>>({});
+
+  // Handler para dialog de notificações - notificar o parent para pausar/retomar o tour
+  const handleNotificationDialogChange = (open: boolean) => {
+    setIsNotificationsOpen(open);
+    // Notificar o parent sobre a mudança de estado do dialog
+    onNotificationDialogChange?.(open);
+  };
+
+  // Handler para dialog de chat interno - notificar o parent para pausar/retomar o tour
+  const handleInternalChatDialogChange = (open: boolean) => {
+    setIsInternalConversationOpen(open);
+    // Notificar o parent sobre a mudança de estado do dialog
+    onInternalChatDialogChange?.(open);
+  };
 
   const handleSendMiniChatMessage = (chatId: string) => {
     const message = miniChatMessages[chatId]?.trim();
@@ -148,7 +165,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
   return (
       <div className="flex h-full flex-shrink-0 gap-2">
         {/* Icon Bar - Lateral esquerda */}
-        <div className="w-16 bg-sidebar flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm">
+        <div className="w-16 bg-sidebar flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm" data-tour="icon-bar">
         {/* Logo */}
         <div className="w-10 h-10 rounded-xl bg-[#2C5866] flex items-center justify-center mb-4 overflow-hidden">
           <Image
@@ -231,7 +248,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
 
         {/* Bottom Icons */}
         <div className="mt-auto flex flex-col items-center gap-2">
-          <Dialog open={isInternalConversationOpen} onOpenChange={setIsInternalConversationOpen}>
+          <Dialog open={isInternalConversationOpen} onOpenChange={handleInternalChatDialogChange}>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -251,7 +268,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[500px] z-[10006]">
               <DialogHeader>
                 <DialogTitle>Iniciar conversa interna</DialogTitle>
                 <DialogDescription>
@@ -312,7 +329,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
                                 ? { ...chat, isMinimized: false }
                                 : { ...chat, isMinimized: true } // Minimizar outros chats
                             ));
-                            setIsInternalConversationOpen(false);
+                            handleInternalChatDialogChange(false);
                             return;
                           }
                           
@@ -345,7 +362,9 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
                           });
                           
                           setMiniChatMessages(prev => ({ ...prev, [newChat.id]: "" }));
-                          setIsInternalConversationOpen(false);
+                          handleInternalChatDialogChange(false);
+                          // Notificar que um chat interno foi criado para destacar a área
+                          onInternalChatCreated?.();
                         }}
                       >
                         Enviar mensagem
@@ -364,11 +383,11 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
       </div>
 
         {/* Main Sidebar Content */}
-        <div className="w-64 bg-[#F9FAFB] flex flex-col flex-shrink-0 h-full rounded-2xl shadow-sm relative">
+        <div className="w-64 bg-[#F9FAFB] flex flex-col flex-shrink-0 h-full rounded-2xl shadow-sm relative" data-tour="sidebar">
           
           {/* Mini Chats - Posicionados acima da barra Caixa de Entrada */}
           {miniChats.length > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 flex flex-col gap-2 px-2 pb-2">
+            <div className="absolute bottom-0 left-0 right-0 z-50 flex flex-col gap-2 px-2 pb-2 pt-2" data-tour="internal-chat-container">
               {/* Chat expandido */}
               {miniChats.filter(chat => !chat.isMinimized).map((chat) => (
                 <div
@@ -479,7 +498,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
               
               {/* Avatares minimizados - abaixo do chat expandido */}
               {miniChats.filter(chat => chat.isMinimized).length > 0 && (
-                <div className="flex flex-row gap-2 overflow-x-auto pb-1 w-full flex-shrink-0">
+                <div className="flex flex-row gap-2 overflow-x-auto pb-1 pt-1 w-full flex-shrink-0">
                   {miniChats.filter(chat => chat.isMinimized).map((chat) => (
                     // Chat minimizado - mostrar apenas o avatar
                     <div
@@ -526,7 +545,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
           <div className="flex items-center justify-between px-2 pb-3 pt-2">
             <h3 className="text-base font-semibold text-gray-900">Caixa de Entrada</h3>
             <div className="flex items-center gap-1">
-              <Dialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+              <Dialog open={isNotificationsOpen} onOpenChange={handleNotificationDialogChange}>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -541,7 +560,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="sm:max-w-[500px] z-[10006]">
                   <DialogHeader>
                     <DialogTitle>Configurações de notificações</DialogTitle>
                     <DialogDescription>
@@ -554,7 +573,10 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
                       className="w-full justify-start h-auto py-3 px-4"
                       onClick={() => {
                         setNotificationPreference("all");
-                        setTimeout(() => setIsNotificationsOpen(false), 300);
+                        setTimeout(() => {
+                          setIsNotificationsOpen(false);
+                          onNotificationDialogChange?.(false);
+                        }, 300);
                       }}
                     >
                       <div className="flex flex-col items-start gap-1">
@@ -570,7 +592,10 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
                       className="w-full justify-start h-auto py-3 px-4"
                       onClick={() => {
                         setNotificationPreference("assigned");
-                        setTimeout(() => setIsNotificationsOpen(false), 300);
+                        setTimeout(() => {
+                          setIsNotificationsOpen(false);
+                          onNotificationDialogChange?.(false);
+                        }, 300);
                       }}
                     >
                       <div className="flex flex-col items-start gap-1">
@@ -586,7 +611,10 @@ export function InboxSidebar({ activeTab, onTabChange, counts }: InboxSidebarPro
                       className="w-full justify-start h-auto py-3 px-4"
                       onClick={() => {
                         setNotificationPreference("none");
-                        setTimeout(() => setIsNotificationsOpen(false), 300);
+                        setTimeout(() => {
+                          setIsNotificationsOpen(false);
+                          onNotificationDialogChange?.(false);
+                        }, 300);
                       }}
                     >
                       <div className="flex flex-col items-start gap-1">

@@ -4,18 +4,14 @@ import { useState, useEffect } from "react";
 import { InboxSidebar } from "@/components/inbox/inbox-sidebar";
 import { ConversationListNew } from "@/components/inbox/conversation-list-new";
 import { ChatArea } from "@/components/inbox/chat-area";
-import { OnboardingTour } from "@/components/inbox/onboarding-tour";
 import { loadConversations, saveConversations, deleteConversation, restoreMariaSilva } from "@/lib/storage";
 import { Conversation } from "@/types/inbox";
 import { CURRENT_USER } from "@/lib/user-config";
-import { Button } from "@/components/ui/button";
-import { HelpCircle } from "lucide-react";
 
 export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string>();
   const [activeTab, setActiveTab] = useState("my");
-  const [isTourOpen, setIsTourOpen] = useState(false);
   const [conversationCounts, setConversationCounts] = useState({
     all: 13,
     my: 8,
@@ -256,32 +252,8 @@ export default function Home() {
     }
   };
 
-  // Verificar se deve iniciar o tour via URL
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get("tour") === "true") {
-        setIsTourOpen(true);
-      }
-    }
-  }, []);
-
   return (
     <>
-      <OnboardingTour isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
-      
-      {/* Botão flutuante para iniciar o tour */}
-      {!isTourOpen && (
-        <Button
-          onClick={() => setIsTourOpen(true)}
-          className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg"
-          size="icon"
-          variant="default"
-        >
-          <HelpCircle className="h-5 w-5" />
-        </Button>
-      )}
-      
       <div className="flex h-screen overflow-hidden bg-sidebar p-2 gap-2">
         {/* Sidebar - oculta em mobile */}
         <div className="hidden lg:flex" data-tour="sidebar">

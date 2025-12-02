@@ -5,6 +5,7 @@ import { CURRENT_USER } from "@/lib/user-config";
 const STORAGE_KEYS = {
   CONVERSATIONS: "clinia-inbox-conversations",
   MESSAGES: "clinia-inbox-messages",
+  TAGS: "clinia-inbox-tags",
 };
 
 /**
@@ -249,6 +250,81 @@ export function clearStorage(): void {
 /**
  * Restaura a conversa da Maria Silva caso ela tenha sido deletada
  */
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+  createdBy?: string;
+  category?: string;
+  usageCount?: number; // Contador de uso (quantas conversas usam)
+}
+
+const DEFAULT_TAGS: Tag[] = [
+  { id: "1", name: "Exemplo 3", color: "#FCD34D", createdAt: new Date().toISOString() },
+  { id: "2", name: "Exemplo", color: "#EF4444", createdAt: new Date().toISOString() },
+  { id: "3", name: "Carteira Bru", color: "#A855F7", createdAt: new Date().toISOString() },
+  { id: "4", name: "Neutro", color: "#10B981", createdAt: new Date().toISOString() },
+  { id: "5", name: "Aviso novo número", color: "#84CC16", createdAt: new Date().toISOString() },
+];
+
+/**
+ * Carrega etiquetas do localStorage ou retorna tags padrão
+ */
+export function loadTags(): Tag[] {
+  if (typeof window === "undefined") {
+    return DEFAULT_TAGS;
+  }
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.TAGS);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error("Erro ao carregar etiquetas do localStorage:", error);
+  }
+
+  return DEFAULT_TAGS;
+}
+
+/**
+ * Salva etiquetas no localStorage
+ */
+export function saveTags(tags: Tag[]): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(STORAGE_KEYS.TAGS, JSON.stringify(tags));
+  } catch (error) {
+    console.error("Erro ao salvar etiquetas no localStorage:", error);
+  }
+}
+
+/**
+ * Adiciona uma nova etiqueta
+ */
+export function addTag(tag: Omit<Tag, "id" | "createdAt">): Tag {
+  const tags = loadTags();
+  const newTag: Tag = {
+    ...tag,
+    id: Date.now().toString(),
+    createdAt: new Date().toISOString(),
+  };
+  const updatedTags = [...tags, newTag];
+  saveTags(updatedTags);
+  return newTag;
+}
+
+/**
+ * Remove uma etiqueta
+ */
+export function deleteTag(tagId: string): void {
+  const tags = loadTags();
+  const updatedTags = tags.filter(tag => tag.id !== tagId);
+  saveTags(updatedTags);
+}
+
 export function restoreMariaSilva(): void {
   if (typeof window === "undefined") return;
 
