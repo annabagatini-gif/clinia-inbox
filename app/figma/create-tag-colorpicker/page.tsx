@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ColorPicker } from "@/components/ui/color-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { HexColorPicker } from "react-colorful";
 import { Palette, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -125,10 +126,52 @@ export default function CreateTagColorPickerPage() {
                 </>
               ) : (
                 <div className="space-y-2">
-                  <ColorPicker
-                    color={customColor}
-                    onChange={setCustomColor}
-                  />
+                  <div className="flex items-center gap-3">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-10 w-20 rounded border cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary/20 transition-all"
+                          style={{ backgroundColor: customColor }}
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-3" align="start">
+                        <div className="space-y-3">
+                          <HexColorPicker color={customColor} onChange={setCustomColor} />
+                          <div className="flex items-center gap-2">
+                            <Input
+                              value={customColor}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^#[0-9A-F]{0,6}$/i.test(value)) {
+                                  setCustomColor(value);
+                                }
+                              }}
+                              placeholder="#3B82F6"
+                              className="font-mono text-sm"
+                              maxLength={7}
+                            />
+                            <div
+                              className="h-10 w-10 rounded border border-gray-300 flex-shrink-0"
+                              style={{ backgroundColor: customColor }}
+                            />
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      value={customColor}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^#[0-9A-F]{0,6}$/i.test(value)) {
+                          setCustomColor(value);
+                        }
+                      }}
+                      placeholder="#3B82F6"
+                      className="flex-1 font-mono text-sm"
+                      maxLength={7}
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Escolha uma cor personalizada usando o seletor ou digite o código hexadecimal
                   </p>
