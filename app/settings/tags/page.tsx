@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { InboxSidebar } from "@/components/inbox/inbox-sidebar";
+import { SettingsSidebar } from "@/components/settings/settings-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,11 +27,22 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { 
   Trash2, Plus, X, Tag as TagIcon, Folder, MessageSquare, Settings, Users, Hash, Link, Key, Clock, FileText, 
-  Search, Filter, ArrowUpDown, Edit2, Palette, MoreVertical, Check
+  Search, Filter, ArrowUpDown, Edit2, Palette, MoreVertical, Check, Loader2
 } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  ColorPicker,
+  ColorPickerSelection,
+  ColorPickerHue,
+  ColorPickerFormat,
+  ColorPickerEyeDropper,
+} from "@/components/ui/shadcn-io/color-picker";
 import { loadTags, saveTags, addTag, deleteTag, Tag } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { CURRENT_USER } from "@/lib/user-config";
+import Color from "color";
+import { toast } from "sonner";
 
 // Cores pré-definidas com nomes semânticos para facilitar escolha
 const PRESET_COLORS = [
@@ -80,10 +94,29 @@ const ALL_USERS = [
 ];
 
 type SortOption = "name" | "date" | "color";
-type FilterColorOption = "all" | string; // "all" ou uma cor específica
 type FilterUserOption = "all" | string; // "all" ou nome do usuário
 
+// Lista de usuários para obter avatares
+const USER_AVATARS: Record<string, string> = {
+  "Anna B": "AB",
+  "June Jensen": "JJ",
+  "Carlos Silva": "CS",
+  "Maria Santos": "MS",
+  "Pedro Costa": "PC",
+  "Ana Oliveira": "AO",
+  "Lucas Alves": "LA",
+  "Julia Pereira": "JP",
+  "Rafael Lima": "RL",
+  "Camila Souza": "CS",
+};
+
+// Função para obter avatar do usuário
+const getUserAvatar = (userName: string): string => {
+  return USER_AVATARS[userName] || userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+};
+
 export default function TagsPage() {
+  const router = useRouter();
   const [tags, setTags] = useState<Tag[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -94,15 +127,34 @@ export default function TagsPage() {
   const [customColor, setCustomColor] = useState("#3B82F6");
   const [tagToDelete, setTagToDelete] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [tagsToDelete, setTagsToDelete] = useState<Set<string>>(new Set());
+  const [justDeletedAll, setJustDeletedAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
-  const [filterByColor, setFilterByColor] = useState<FilterColorOption>("all");
   const [filterByUser, setFilterByUser] = useState<FilterUserOption>("all");
-  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setTags(loadTags());
   }, []);
+
+  // Simular loading durante busca/filtro
+  useEffect(() => {
+    const hasActiveFilters = searchQuery.trim() || filterByUser !== "all";
+    
+    if (hasActiveFilters) {
+      setIsLoading(true);
+      // Simular delay de busca (300-800ms)
+      const delay = Math.random() * 500 + 300;
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, delay);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [searchQuery, filterByUser]);
 
   // Obter lista única de usuários que criaram etiquetas
   const usersWhoCreatedTags = useMemo(() => {
@@ -126,11 +178,6 @@ export default function TagsPage() {
       );
     }
 
-    // Filtro por cor
-    if (filterByColor !== "all") {
-      filtered = filtered.filter(tag => tag.color === filterByColor);
-    }
-
     // Filtro por usuário criador
     if (filterByUser !== "all") {
       filtered = filtered.filter(tag => tag.createdBy === filterByUser);
@@ -152,7 +199,7 @@ export default function TagsPage() {
     });
 
     return sorted;
-  }, [tags, searchQuery, sortBy, filterByColor, filterByUser]);
+  }, [tags, searchQuery, sortBy, filterByUser]);
 
   const handleAddTag = () => {
     if (!newTagName.trim()) return;
@@ -193,22 +240,56 @@ export default function TagsPage() {
   };
 
   const handleDeleteTag = (tagId: string) => {
+    const wasLastTag = tags.length === 1;
+    
     deleteTag(tagId);
-    setTags(loadTags());
+    const updatedTags = loadTags();
+    setTags(updatedTags);
     setTagToDelete(null);
     setSelectedTags(prev => {
       const newSet = new Set(prev);
       newSet.delete(tagId);
       return newSet;
     });
+    
+    // Se deletou a última, marcar flag para mostrar empty state específico
+    if (wasLastTag && updatedTags.length === 0) {
+      setJustDeletedAll(true);
+      setTimeout(() => setJustDeletedAll(false), 5000); // Reset após 5 segundos
+    }
+    
+    // Feedback de sucesso
+    toast.success("Etiqueta excluída");
   };
 
   const handleDeleteSelected = () => {
-    selectedTags.forEach(tagId => {
+    setTagsToDelete(selectedTags);
+  };
+
+  const confirmDeleteSelected = () => {
+    const count = tagsToDelete.size;
+    const wasAllTags = tags.length === count;
+    
+    tagsToDelete.forEach(tagId => {
       deleteTag(tagId);
     });
-    setTags(loadTags());
+    const updatedTags = loadTags();
+    setTags(updatedTags);
     setSelectedTags(new Set());
+    setTagsToDelete(new Set());
+    
+    // Se deletou todas, marcar flag para mostrar empty state específico
+    if (wasAllTags && updatedTags.length === 0) {
+      setJustDeletedAll(true);
+      setTimeout(() => setJustDeletedAll(false), 5000); // Reset após 5 segundos
+    }
+    
+    // Feedback de sucesso
+    if (count === 1) {
+      toast.success("Etiqueta excluída");
+    } else {
+      toast.success(`${count} etiquetas excluídas`);
+    }
   };
 
   const handleToggleSelect = (tagId: string) => {
@@ -249,63 +330,57 @@ export default function TagsPage() {
     return PRESET_COLORS.find(c => c.value === color)?.label || "Personalizado";
   };
 
+  // Função para determinar a ação do empty state baseado no contexto
+  const getEmptyStateAction = () => {
+    const hasFilters = searchQuery || filterByUser !== "all";
+    
+    // Se há filtros ativos, oferece limpar filtros
+    if (hasFilters) {
+      return {
+        label: "Limpar filtros",
+        onClick: () => {
+          setSearchQuery("");
+          setFilterByUser("all");
+        },
+        variant: "outline" as const,
+      };
+    }
+    
+    // Caso contrário, oferece criar etiqueta
+    return {
+      label: "Criar etiqueta",
+      onClick: () => setIsDialogOpen(true),
+      variant: "default" as const,
+    };
+  };
+
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar de Navegação */}
-      <div className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-          <h2 className="font-semibold text-sm">Configurações</h2>
-          <Button variant="ghost" size="icon-sm" className="h-6 w-6">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Menu Items */}
-        <ScrollArea className="flex-1">
-          <nav className="p-2 space-y-1">
-            {SETTINGS_MENU_ITEMS.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors",
-                    item.active
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </div>
-                  {!item.active && <span className="text-muted-foreground">›</span>}
-                </button>
-              );
-            })}
-          </nav>
-        </ScrollArea>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-sidebar-border flex items-center gap-2">
-          <Button variant="ghost" size="icon-sm" className="h-8 w-8">
-            <Plus className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon-sm" className="h-8 w-8">
-            <MessageSquare className="h-4 w-4" />
-          </Button>
-          <div className="ml-auto">
-            <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-              AV
-            </div>
-          </div>
-        </div>
+    <div className="flex h-screen overflow-hidden bg-sidebar p-2 gap-2">
+      {/* Sidebar principal - mesma da inbox */}
+      <div className="hidden lg:flex">
+        <InboxSidebar 
+          activeTab="settings"
+          onTabChange={() => {}}
+          counts={{
+            all: 13,
+            my: 8,
+            unread: 0,
+            unassigned: 3,
+          }}
+          showSettings={true}
+          onSettingsClick={() => {}}
+          onInboxClick={() => router.push("/")}
+        />
       </div>
 
-      {/* Área Principal */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
+      {/* Container principal */}
+      <div className="flex-1 flex overflow-hidden bg-background rounded-lg">
+        {/* Sidebar de navegação de Settings */}
+        <SettingsSidebar />
+
+        {/* Área de conteúdo principal */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header */}
         <div className="border-b p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -325,54 +400,41 @@ export default function TagsPage() {
             <div className="flex items-center gap-3 flex-wrap">
               {/* Busca */}
               <div className="relative flex-1 min-w-[200px] max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                {isLoading ? (
+                  <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+                ) : (
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                )}
                 <Input
                   placeholder="Buscar etiquetas..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className={cn("pl-9", isLoading && "opacity-70")}
+                  disabled={isLoading}
                 />
               </div>
 
-              {/* Filtro por Cor */}
-              <Select value={filterByColor} onValueChange={setFilterByColor}>
-                <SelectTrigger className="w-[180px]">
-                  <Palette className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filtrar por cor" />
+              {/* Filtro por Usuário Criador */}
+              <Select value={filterByUser} onValueChange={setFilterByUser}>
+                <SelectTrigger className="w-[200px]">
+                  <Users className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filtrar por criador" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as cores</SelectItem>
-                  {PRESET_COLORS.map((color) => (
-                    <SelectItem key={color.value} value={color.value}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-4 w-4 rounded-full border border-gray-200"
-                          style={{ backgroundColor: color.value }}
-                        />
-                        <span>{color.label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Filtro por Usuário Criador */}
-              {usersWhoCreatedTags.length > 0 && (
-                <Select value={filterByUser} onValueChange={setFilterByUser}>
-                  <SelectTrigger className="w-[200px]">
-                    <Users className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filtrar por criador" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os criadores</SelectItem>
-                    {usersWhoCreatedTags.map((userName) => (
+                  <SelectItem value="all">Todos os criadores</SelectItem>
+                  {usersWhoCreatedTags.length > 0 ? (
+                    usersWhoCreatedTags.map((userName) => (
                       <SelectItem key={userName} value={userName}>
                         {userName}
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+                    ))
+                  ) : (
+                    <SelectItem value="all" disabled>
+                      Nenhum criador encontrado
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
 
               {/* Ordenação */}
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
@@ -387,22 +449,33 @@ export default function TagsPage() {
                 </SelectContent>
               </Select>
 
-              {/* Botão Limpar Filtros */}
-              {(searchQuery || filterByColor !== "all" || filterByUser !== "all") && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setFilterByColor("all");
-                    setFilterByUser("all");
-                  }}
-                  className="text-muted-foreground"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Limpar filtros
-                </Button>
-              )}
+              {/* Botão Limpar Filtros - Aparece apenas quando há filtros ativos */}
+              {(() => {
+                const activeFiltersCount = [
+                  searchQuery.trim() && 1,
+                  filterByUser !== "all" && 1,
+                ].filter(Boolean).length;
+                
+                if (activeFiltersCount === 0) return null;
+                
+                return (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setFilterByUser("all");
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Limpar filtros
+                    {activeFiltersCount > 1 && (
+                      <span className="ml-1 text-xs">({activeFiltersCount})</span>
+                    )}
+                  </Button>
+                );
+              })()}
 
               {/* Ações em massa */}
               {selectedTags.size > 0 && (
@@ -412,18 +485,28 @@ export default function TagsPage() {
                   onClick={handleDeleteSelected}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Deletar ({selectedTags.size})
+                  Excluir {selectedTags.size} {selectedTags.size === 1 ? 'etiqueta' : 'etiquetas'}
                 </Button>
               )}
             </div>
 
             {/* Indicador de filtros ativos */}
-            {(searchQuery || filterByColor !== "all" || filterByUser !== "all") && (
+            {(searchQuery || filterByUser !== "all") && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Filter className="h-3 w-3" />
+                {isLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Filter className="h-3 w-3" />
+                )}
                 <span>
-                  {filteredAndSortedTags.length} de {tags.length} etiqueta{tags.length !== 1 ? 's' : ''}
-                  {searchQuery && ` encontrada${filteredAndSortedTags.length !== 1 ? 's' : ''}`}
+                  {isLoading ? (
+                    "Buscando..."
+                  ) : (
+                    <>
+                      {filteredAndSortedTags.length} de {tags.length} etiqueta{tags.length !== 1 ? 's' : ''}
+                      {searchQuery && ` encontrada${filteredAndSortedTags.length !== 1 ? 's' : ''}`}
+                    </>
+                  )}
                 </span>
               </div>
             )}
@@ -433,14 +516,76 @@ export default function TagsPage() {
         {/* Lista de Etiquetas */}
         <ScrollArea className="flex-1">
           <div className="p-6">
-            {filteredAndSortedTags.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <TagIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>
-                  {searchQuery || filterByColor !== "all" || filterByUser !== "all"
-                    ? "Nenhuma etiqueta encontrada"
-                    : "Nenhuma etiqueta criada ainda"}
+            {isLoading ? (
+              <div className="space-y-2">
+                {/* Skeleton Loaders - Estrutura idêntica ao componente real */}
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 p-4 bg-card border rounded-lg animate-pulse"
+                  >
+                    {/* Checkbox skeleton */}
+                    <div className="h-4 w-4 rounded border border-border bg-muted" />
+                    
+                    {/* Círculo de cor skeleton - mesma dimensão do real (h-5 w-5) */}
+                    <div className="h-5 w-5 rounded-full flex-shrink-0 border border-gray-200 bg-muted" />
+                    
+                    {/* Badge skeleton - mesma altura do Badge real */}
+                    <div className="h-6 w-20 rounded-md bg-muted" />
+                    
+                    {/* Nome da etiqueta skeleton - flex-1 como no real */}
+                    <span className="flex-1 h-4 bg-muted rounded" />
+                    
+                    {/* Avatar skeleton - mesma dimensão do real (h-6 w-6) */}
+                    <div className="h-6 w-6 rounded-full bg-muted" />
+                    
+                    {/* Informações adicionais skeleton - mesma estrutura flex-col */}
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="h-3 w-16 bg-muted rounded" />
+                      <div className="h-3 w-20 bg-muted rounded" />
+                    </div>
+                    
+                    {/* Botões de ação skeleton - mesma estrutura gap-1 */}
+                    <div className="flex items-center gap-1">
+                      <div className="h-8 w-8 rounded bg-muted" />
+                      <div className="h-8 w-8 rounded bg-muted" />
+                    </div>
+                  </div>
+                ))}
+                {/* Indicador de loading */}
+                <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Buscando etiquetas...</span>
+                </div>
+              </div>
+            ) : filteredAndSortedTags.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-4">
+                <div className="mb-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50">
+                    <TagIcon className="h-8 w-8 text-muted-foreground" strokeWidth={1.5} />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  Nenhuma etiqueta encontrada
+                </h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-md text-center">
+                  Crie etiquetas para organizar e categorizar suas conversas.
                 </p>
+                {(() => {
+                  const action = getEmptyStateAction();
+                  return (
+                    <Button
+                      variant={action.variant}
+                      size={action.variant === "outline" ? "sm" : "default"}
+                      onClick={action.onClick}
+                    >
+                      {action.variant === "default" && (
+                        <Plus className="h-4 w-4 mr-2" />
+                      )}
+                      {action.label}
+                    </Button>
+                  );
+                })()}
               </div>
             ) : (
               <div className="space-y-2">
@@ -496,11 +641,20 @@ export default function TagsPage() {
                       {/* Nome da Etiqueta */}
                       <span className="flex-1 font-medium">{tag.name}</span>
 
+                      {/* Avatar do Criador */}
+                      {tag.createdBy && (
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="bg-slate-200 text-slate-700 text-[10px]">
+                            {getUserAvatar(tag.createdBy)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+
                       {/* Informações adicionais */}
                       <div className="flex flex-col items-end gap-1">
                         {tag.createdBy && (
                           <span className="text-xs text-muted-foreground">
-                            Criado por {tag.createdBy}
+                            {tag.createdBy}
                           </span>
                         )}
                         <span className="text-xs text-muted-foreground">
@@ -538,9 +692,9 @@ export default function TagsPage() {
             )}
           </div>
         </ScrollArea>
-      </div>
+        </div>
 
-      {/* Dialog para Adicionar Etiqueta */}
+        {/* Dialog para Adicionar Etiqueta */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -622,15 +776,45 @@ export default function TagsPage() {
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
-                      className="h-10 w-20 rounded border cursor-pointer"
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-10 w-20 rounded border cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary/20 transition-all"
+                          style={{ backgroundColor: customColor }}
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <ColorPicker
+                          value={customColor}
+                          onChange={(rgba) => {
+                            if (Array.isArray(rgba) && rgba.length >= 3) {
+                              const [r, g, b] = rgba;
+                              const hex = Color.rgb(r, g, b).hex();
+                              setCustomColor(hex);
+                            }
+                          }}
+                          className="w-[200px]"
+                        >
+                          <div className="space-y-3">
+                            <ColorPickerSelection className="h-32 w-full" />
+                            <ColorPickerHue />
+                            <div className="flex items-center gap-2">
+                              <ColorPickerFormat className="flex-1" />
+                              <ColorPickerEyeDropper />
+                            </div>
+                          </div>
+                        </ColorPicker>
+                      </PopoverContent>
+                    </Popover>
                     <Input
                       value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^#[0-9A-F]{0,6}$/i.test(value)) {
+                          setCustomColor(value);
+                        }
+                      }}
                       placeholder="#3B82F6"
                       className="flex-1 font-mono text-sm"
                       maxLength={7}
@@ -750,15 +934,45 @@ export default function TagsPage() {
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
-                      className="h-10 w-20 rounded border cursor-pointer"
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-10 w-20 rounded border cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary/20 transition-all"
+                          style={{ backgroundColor: customColor }}
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <ColorPicker
+                          value={customColor}
+                          onChange={(rgba) => {
+                            if (Array.isArray(rgba) && rgba.length >= 3) {
+                              const [r, g, b] = rgba;
+                              const hex = Color.rgb(r, g, b).hex();
+                              setCustomColor(hex);
+                            }
+                          }}
+                          className="w-[200px]"
+                        >
+                          <div className="space-y-3">
+                            <ColorPickerSelection className="h-32 w-full" />
+                            <ColorPickerHue />
+                            <div className="flex items-center gap-2">
+                              <ColorPickerFormat className="flex-1" />
+                              <ColorPickerEyeDropper />
+                            </div>
+                          </div>
+                        </ColorPicker>
+                      </PopoverContent>
+                    </Popover>
                     <Input
                       value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^#[0-9A-F]{0,6}$/i.test(value)) {
+                          setCustomColor(value);
+                        }
+                      }}
                       placeholder="#3B82F6"
                       className="flex-1 font-mono text-sm"
                       maxLength={7}
@@ -794,13 +1008,13 @@ export default function TagsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog de Confirmação para Deletar */}
+      {/* Dialog de Confirmação para Deletar (Individual) */}
       <Dialog open={tagToDelete !== null} onOpenChange={(open) => !open && setTagToDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Deletar etiqueta</DialogTitle>
+            <DialogTitle>Excluir etiqueta</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja deletar esta etiqueta? Esta ação não pode ser desfeita.
+              Esta etiqueta será removida permanentemente. As conversas que a utilizam não serão afetadas.
             </DialogDescription>
           </DialogHeader>
           
@@ -810,13 +1024,47 @@ export default function TagsPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => tagToDelete && handleDeleteTag(tagToDelete)}
+              onClick={() => {
+                if (tagToDelete) {
+                  handleDeleteTag(tagToDelete);
+                }
+              }}
             >
-              Deletar
+              Excluir etiqueta
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Confirmação para Deletar (Múltiplas) */}
+      <Dialog open={tagsToDelete.size > 0} onOpenChange={(open) => !open && setTagsToDelete(new Set())}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Excluir {tagsToDelete.size} {tagsToDelete.size === 1 ? 'etiqueta' : 'etiquetas'}?
+            </DialogTitle>
+            <DialogDescription>
+              {tagsToDelete.size === 1 
+                ? 'Esta etiqueta será removida permanentemente. As conversas que a utilizam não serão afetadas.'
+                : `Estas ${tagsToDelete.size} etiquetas serão removidas permanentemente. As conversas que as utilizam não serão afetadas.`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTagsToDelete(new Set())}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteSelected}
+            >
+              Excluir {tagsToDelete.size} {tagsToDelete.size === 1 ? 'etiqueta' : 'etiquetas'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </div>
     </div>
   );
 }

@@ -7,8 +7,11 @@ import { ChatArea } from "@/components/inbox/chat-area";
 import { loadConversations, saveConversations, deleteConversation, restoreMariaSilva } from "@/lib/storage";
 import { Conversation } from "@/types/inbox";
 import { CURRENT_USER } from "@/lib/user-config";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string>();
   const [activeTab, setActiveTab] = useState("my");
@@ -18,6 +21,7 @@ export default function Home() {
     unread: 0,
     unassigned: 3,
   });
+
 
   const handleConversationUpdate = (conversationId: string, updates: Partial<Conversation>) => {
     setConversations((prev) => {
@@ -252,6 +256,16 @@ export default function Home() {
     }
   };
 
+  // Se estiver em uma rota de settings, não renderizar NADA da inbox
+  if (pathname?.startsWith("/settings")) {
+    return null; // Deixa as páginas de settings renderizarem seu próprio conteúdo
+  }
+
+  // Garantir que só renderiza se estiver na página principal
+  if (pathname !== "/" && !pathname?.startsWith("/onboarding")) {
+    return null;
+  }
+
   return (
     <>
       <div className="flex h-screen overflow-hidden bg-sidebar p-2 gap-2">
@@ -261,34 +275,37 @@ export default function Home() {
             activeTab={activeTab} 
             onTabChange={setActiveTab}
             counts={conversationCounts}
+            showSettings={false}
+            onSettingsClick={() => router.push("/settings")}
+            onInboxClick={() => router.push("/")}
           />
         </div>
       
-      {/* Lista de conversas - oculta quando conversa está selecionada em mobile */}
-      <div className={`${selectedConversationId ? 'hidden md:block' : 'block'}`}>
-        <ConversationListNew
-          selectedId={selectedConversationId}
-          onSelect={setSelectedConversationId}
-          activeTab={activeTab}
-          onCountsChange={setConversationCounts}
-          conversations={conversationsWithMaria}
-          onConversationUpdate={handleConversationUpdate}
-          onConversationDelete={handleConversationDelete}
-          onConversationAdd={handleConversationAdd}
-        />
-      </div>
-      
-      {/* Chat - oculta quando nenhuma conversa está selecionada em mobile */}
-      <div className={`flex-1 min-w-0 ${selectedConversationId ? 'block' : 'hidden md:block'}`}>
-        <ChatArea
-          conversationId={selectedConversationId}
-          conversationName={selectedConversation?.name}
-          conversation={selectedConversation}
-          onBack={() => setSelectedConversationId(undefined)}
-          onConversationUpdate={handleConversationUpdate}
-          onNavigateToConversation={handleNavigateToConversation}
-        />
-      </div>
+        {/* Lista de conversas - APENAS na página da inbox */}
+        <div className={`${selectedConversationId ? 'hidden md:block' : 'block'}`}>
+          <ConversationListNew
+            selectedId={selectedConversationId}
+            onSelect={setSelectedConversationId}
+            activeTab={activeTab}
+            onCountsChange={setConversationCounts}
+            conversations={conversationsWithMaria}
+            onConversationUpdate={handleConversationUpdate}
+            onConversationDelete={handleConversationDelete}
+            onConversationAdd={handleConversationAdd}
+          />
+        </div>
+        
+        {/* Chat - oculta quando nenhuma conversa está selecionada em mobile */}
+        <div className={`flex-1 min-w-0 ${selectedConversationId ? 'block' : 'hidden md:block'}`}>
+          <ChatArea
+            conversationId={selectedConversationId}
+            conversationName={selectedConversation?.name}
+            conversation={selectedConversation}
+            onBack={() => setSelectedConversationId(undefined)}
+            onConversationUpdate={handleConversationUpdate}
+            onNavigateToConversation={handleNavigateToConversation}
+          />
+        </div>
       </div>
     </>
   );

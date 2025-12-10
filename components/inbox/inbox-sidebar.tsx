@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
-import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare, Bot, Workflow, Bell } from "lucide-react";
+import { Home, Inbox, Users, LayoutDashboard, ChevronRight, Search, MessageSquare, UserCircle, Package, MessagesSquare, Bot, Workflow, Bell, Settings } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -40,6 +41,9 @@ interface InboxSidebarProps {
   onNotificationDialogChange?: (isOpen: boolean) => void;
   onInternalChatDialogChange?: (isOpen: boolean) => void;
   onInternalChatCreated?: () => void;
+  showSettings?: boolean;
+  onSettingsClick?: () => void;
+  onInboxClick?: () => void;
 }
 
 // Lista de usuários com status
@@ -71,8 +75,12 @@ interface MiniChat {
 
 const MAX_MINIMIZED_CHATS = 5; // Número máximo de conversas minimizadas
 
-export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDialogChange, onInternalChatDialogChange, onInternalChatCreated }: InboxSidebarProps) {
+export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDialogChange, onInternalChatDialogChange, onInternalChatCreated, showSettings: showSettingsProp, onSettingsClick, onInboxClick }: InboxSidebarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  // Usar prop se disponível, senão usar pathname
+  const showSettings = showSettingsProp !== undefined ? showSettingsProp : (pathname?.startsWith("/settings") || false);
   const [notificationPreference, setNotificationPreference] = useState<"all" | "assigned" | "none">("all");
   const [isInternalConversationOpen, setIsInternalConversationOpen] = useState(false);
   const [miniChats, setMiniChats] = useState<MiniChat[]>([]);
@@ -163,7 +171,7 @@ export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDia
   const unreadCount = counts?.unread ?? 0;
   const unassignedCount = counts?.unassigned ?? 3;
   return (
-      <div className="flex h-full flex-shrink-0 gap-2">
+    <div className="flex h-full flex-shrink-0 gap-2">
         {/* Icon Bar - Lateral esquerda */}
         <div className="w-16 bg-sidebar flex flex-col items-center py-4 gap-2 rounded-2xl shadow-sm" data-tour="icon-bar">
         {/* Logo */}
@@ -184,13 +192,19 @@ export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDia
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="w-12 h-12 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-300 cursor-pointer"
+                  className={cn(
+                    "w-12 h-12 rounded-xl cursor-pointer",
+                    pathname === "/dashboard" 
+                      ? "bg-gray-200 text-gray-900 hover:bg-gray-300" 
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+                  )}
+                  onClick={() => router.push("/dashboard")}
                 >
                   <Home className="h-7 w-7" />
                 </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
-              Início
+              Dashboard
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -201,7 +215,48 @@ export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDia
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-12 h-12 rounded-xl bg-gray-200 text-gray-900 hover:bg-gray-300 cursor-pointer"
+                  className={cn(
+                    "w-12 h-12 rounded-xl cursor-pointer",
+                    showSettings || pathname?.startsWith("/settings")
+                      ? "bg-gray-200 text-gray-900 hover:bg-gray-300" 
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+                  )}
+                onClick={() => {
+                  if (onSettingsClick) {
+                    onSettingsClick();
+                  } else {
+                    router.push("/settings");
+                  }
+                }}
+              >
+                <Settings className="h-7 w-7" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Configurações
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "w-12 h-12 rounded-xl cursor-pointer",
+                  (!showSettings && (pathname === "/" || pathname?.startsWith("/onboarding")))
+                    ? "bg-gray-200 text-gray-900 hover:bg-gray-300" 
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-300"
+                )}
+                onClick={() => {
+                  if (onInboxClick) {
+                    onInboxClick();
+                  } else {
+                    router.push("/");
+                  }
+                }}
               >
                 <Inbox className="h-7 w-7" />
               </Button>
@@ -382,11 +437,12 @@ export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDia
         </div>
       </div>
 
-        {/* Main Sidebar Content */}
-        <div className="w-64 bg-[#F9FAFB] flex flex-col flex-shrink-0 h-full rounded-2xl shadow-sm relative" data-tour="sidebar">
-          
-          {/* Mini Chats - Posicionados acima da barra Caixa de Entrada */}
-          {miniChats.length > 0 && (
+      {/* Main Sidebar Content - OCULTO quando estiver em settings */}
+      {!showSettings && (
+          <div className="w-64 bg-[#F9FAFB] flex flex-col flex-shrink-0 h-full rounded-2xl shadow-sm relative" data-tour="sidebar">
+            
+            {/* Mini Chats - Posicionados acima da barra Caixa de Entrada */}
+            {miniChats.length > 0 && (
             <div className="absolute bottom-0 left-0 right-0 z-50 flex flex-col gap-2 px-2 pb-2 pt-2" data-tour="internal-chat-container">
               {/* Chat expandido */}
               {miniChats.filter(chat => !chat.isMinimized).map((chat) => (
@@ -538,13 +594,13 @@ export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDia
             </div>
           )}
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 min-h-0 px-3 py-4">
-        <div className="space-y-1">
-          {/* Título Caixa de Entrada */}
-          <div className="flex items-center justify-between px-2 pb-3 pt-2">
-            <h3 className="text-base font-semibold text-gray-900">Caixa de Entrada</h3>
-            <div className="flex items-center gap-1">
+          {/* Navigation */}
+          <ScrollArea className="flex-1 min-h-0 px-3 py-4">
+            <div className="space-y-1">
+            {/* Título Caixa de Entrada */}
+            <div className="flex items-center justify-between px-2 pb-3 pt-2">
+              <h3 className="text-base font-semibold text-gray-900">Caixa de Entrada</h3>
+              <div className="flex items-center gap-1">
               <Dialog open={isNotificationsOpen} onOpenChange={handleNotificationDialogChange}>
                 <TooltipProvider>
                   <Tooltip>
@@ -627,112 +683,115 @@ export function InboxSidebar({ activeTab, onTabChange, counts, onNotificationDia
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
+            </div>
+
+            {/* Botões de navegação da Caixa de Entrada */}
+            <Button
+                variant="ghost"
+                onClick={() => onTabChange("all")}
+                className={cn(
+                  "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
+                  activeTab === "all"
+                    ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
+                    : "text-gray-700 font-normal hover:bg-gray-200"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Home className="h-5 w-5" />
+                  Todos os chats
+                </div>
+                {activeTab === "all" ? (
+                  <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
+                    {allCount}
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-500">{allCount}</span>
+                )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => onTabChange("my")}
+                className={cn(
+                  "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
+                  activeTab === "my"
+                    ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
+                    : "text-gray-700 font-normal hover:bg-gray-200"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Inbox className="h-5 w-5" />
+                  Meus chats
+                </div>
+                {activeTab === "my" ? (
+                  <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
+                    {myCount}
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-500">{myCount}</span>
+                )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => onTabChange("unassigned")}
+                className={cn(
+                  "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
+                  activeTab === "unassigned"
+                    ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
+                    : "text-gray-700 font-normal hover:bg-gray-200"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5" />
+                  Chats não atribuídos
+                </div>
+                {activeTab === "unassigned" ? (
+                  <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
+                    {unassignedCount}
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-500">{unassignedCount}</span>
+                )}
+              </Button>
+
+            {/* Seção Grupos */}
+            <div className="pt-4">
+              <h3 className="px-2 text-xs font-medium text-gray-500 mb-2 uppercase">
+                Grupos
+              </h3>
+              
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
+                >
+                  <Users className="h-5 w-5" />
+                  Grupo 1
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
+                >
+                  <Users className="h-5 w-5" />
+                  Grupo 2
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
+                >
+                  <Users className="h-5 w-5" />
+                  Grupo 3
+                </Button>
+              </div>
             </div>
           </div>
-
-          <Button
-            variant="ghost"
-            onClick={() => onTabChange("all")}
-            className={cn(
-              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
-              activeTab === "all"
-                ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
-                : "text-gray-700 font-normal hover:bg-gray-200"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <Home className="h-5 w-5" />
-              Todos os chats
-            </div>
-            {activeTab === "all" ? (
-              <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                {allCount}
-              </span>
-            ) : (
-              <span className="text-xs text-gray-500">{allCount}</span>
-            )}
-          </Button>
-
-          <Button
-            variant="ghost"
-            onClick={() => onTabChange("my")}
-            className={cn(
-              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
-              activeTab === "my"
-                ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
-                : "text-gray-700 font-normal hover:bg-gray-200"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <Inbox className="h-5 w-5" />
-              Meus chats
-            </div>
-            {activeTab === "my" ? (
-              <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                {myCount}
-              </span>
-            ) : (
-              <span className="text-xs text-gray-500">{myCount}</span>
-            )}
-          </Button>
-
-          <Button
-            variant="ghost"
-            onClick={() => onTabChange("unassigned")}
-            className={cn(
-              "w-full justify-between gap-3 text-sm h-10 px-3 rounded-lg cursor-pointer",
-              activeTab === "unassigned"
-                ? "bg-gray-200 text-gray-900 font-medium hover:bg-gray-300"
-                : "text-gray-700 font-normal hover:bg-gray-200"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <Users className="h-5 w-5" />
-              Chats não atribuídos
-            </div>
-            {activeTab === "unassigned" ? (
-              <span className="text-xs bg-gray-900 text-white rounded-full px-2 py-0.5 font-semibold">
-                {unassignedCount}
-              </span>
-            ) : (
-              <span className="text-xs text-gray-500">{unassignedCount}</span>
-            )}
-          </Button>
-
-          <div className="pt-4">
-            <h3 className="px-2 text-xs font-medium text-gray-500 mb-2 uppercase">
-              Grupos
-            </h3>
-            
-            <div className="space-y-1">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
-              >
-                <Users className="h-5 w-5" />
-                Grupo 1
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
-              >
-                <Users className="h-5 w-5" />
-                Grupo 2
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 font-normal text-sm h-10 px-3 hover:bg-gray-200 rounded-lg text-gray-700"
-              >
-                <Users className="h-5 w-5" />
-                Grupo 3
-              </Button>
-            </div>
+          </ScrollArea>
           </div>
-        </div>
-      </ScrollArea>
-      </div>
+        )}
     </div>
   );
 }

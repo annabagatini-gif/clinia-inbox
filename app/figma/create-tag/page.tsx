@@ -13,13 +13,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Palette, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  ColorPicker,
+  ColorPickerSelection,
+  ColorPickerHue,
+  ColorPickerFormat,
+  ColorPickerEyeDropper,
+} from "@/components/ui/shadcn-io/color-picker";
+import { Palette, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import Color from "color";
 
-// Cores pré-definidas com nomes semânticos
+// Cores pré-definidas com nomes semânticos (16 cores)
 const PRESET_COLORS = [
   { value: "#EF4444", label: "Urgente", description: "Vermelho" },
   { value: "#F97316", label: "Atenção", description: "Laranja" },
   { value: "#FCD34D", label: "Aviso", description: "Amarelo" },
+  { value: "#F59E0B", label: "Prioridade", description: "Âmbar" },
   { value: "#84CC16", label: "Pendente", description: "Lima" },
   { value: "#10B981", label: "Resolvido", description: "Verde" },
   { value: "#14B8A6", label: "Em andamento", description: "Verde-água" },
@@ -31,12 +42,21 @@ const PRESET_COLORS = [
   { value: "#D946EF", label: "Destaque", description: "Fúcsia" },
   { value: "#EC4899", label: "Especial", description: "Rosa" },
   { value: "#F43F5E", label: "Crítico", description: "Rosa-escuro" },
+  { value: "#8B5A2B", label: "Arquivo", description: "Marrom" },
 ];
 
-export default function CreateTagCustomPage() {
+export default function CreateTagPage() {
   const [newTagName, setNewTagName] = useState("Nome da etiqueta");
+  const [selectedColor, setSelectedColor] = useState("#EF4444"); // Vermelho "Urgente" selecionado
+  const [useCustomColor, setUseCustomColor] = useState(false);
   const [customColor, setCustomColor] = useState("#3B82F6");
-  const [useCustomColor, setUseCustomColor] = useState(true);
+
+  const getColorLabel = (color: string) => {
+    return PRESET_COLORS.find(c => c.value === color)?.label || "Personalizado";
+  };
+
+  const currentColor = useCustomColor ? customColor : selectedColor;
+
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -84,18 +104,76 @@ export default function CreateTagCustomPage() {
                 </Button>
               </div>
 
-              {useCustomColor ? (
+              {!useCustomColor ? (
+                <>
+                  {/* Cores pré-definidas com nomes */}
+                  <div className="grid grid-cols-8 gap-2">
+                    {PRESET_COLORS.map((color) => (
+                      <button
+                        key={color.value}
+                        type="button"
+                        className={cn(
+                          "h-10 w-10 rounded-md border-2 transition-all relative group",
+                          selectedColor === color.value
+                            ? "border-foreground scale-110 ring-2 ring-offset-2 ring-foreground/20"
+                            : "border-transparent hover:scale-105"
+                        )}
+                        style={{ backgroundColor: color.value }}
+                        onClick={() => setSelectedColor(color.value)}
+                        title={color.label}
+                      >
+                        {selectedColor === color.value && (
+                          <Check className="h-4 w-4 text-white absolute inset-0 m-auto drop-shadow-md" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Selecionado: <strong>{getColorLabel(selectedColor)}</strong>
+                  </p>
+                </>
+              ) : (
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
-                      className="h-10 w-20 rounded border cursor-pointer"
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-10 w-20 rounded border cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary/20 transition-all"
+                          style={{ backgroundColor: customColor }}
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <ColorPicker
+                          value={customColor}
+                          onChange={(rgba) => {
+                            if (Array.isArray(rgba) && rgba.length >= 3) {
+                              const [r, g, b] = rgba;
+                              const hex = Color.rgb(r, g, b).hex();
+                              setCustomColor(hex);
+                            }
+                          }}
+                          className="w-[200px]"
+                        >
+                          <div className="space-y-3">
+                            <ColorPickerSelection className="h-32 w-full" />
+                            <ColorPickerHue />
+                            <div className="flex items-center gap-2">
+                              <ColorPickerFormat className="flex-1" />
+                              <ColorPickerEyeDropper />
+                            </div>
+                          </div>
+                        </ColorPicker>
+                      </PopoverContent>
+                    </Popover>
                     <Input
                       value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^#[0-9A-F]{0,6}$/i.test(value)) {
+                          setCustomColor(value);
+                        }
+                      }}
                       placeholder="#3B82F6"
                       className="flex-1 font-mono text-sm"
                       maxLength={7}
@@ -105,24 +183,6 @@ export default function CreateTagCustomPage() {
                     Escolha uma cor personalizada usando o seletor ou digite o código hexadecimal
                   </p>
                 </div>
-              ) : (
-                <>
-                  {/* Cores pré-definidas com nomes */}
-                  <div className="grid grid-cols-7 gap-2">
-                    {PRESET_COLORS.map((color) => (
-                      <button
-                        key={color.value}
-                        type="button"
-                        className="h-10 w-10 rounded-md border-2 border-transparent hover:scale-105 transition-all"
-                        style={{ backgroundColor: color.value }}
-                        title={color.label}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Selecionado: <strong>Padrão</strong>
-                  </p>
-                </>
               )}
             </div>
 
@@ -132,7 +192,7 @@ export default function CreateTagCustomPage() {
               <Badge
                 className="text-sm"
                 style={{
-                  backgroundColor: customColor,
+                  backgroundColor: currentColor,
                   color: "white",
                 }}
               >
